@@ -1,0 +1,2 @@
+sudo install ubuntu-mainline-kernel.sh /usr/local/bin/
+ubuntu-mainline-kernel.sh -i
