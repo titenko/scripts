@@ -1,4 +1,5 @@
 #!/bin/bash
+#This method allow to replace gksudo with bash script and pkexec.
 if [ -z $1 ]; then
  echo -e "at least 1 argument required!\n" >> /dev/stderr
  exit 1
