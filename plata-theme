@@ -1,0 +1,4 @@
+#!/bin/bash
+sudo add-apt-repository ppa:tista/plata-theme -y
+sudo apt update -y
+sudo apt install plata-theme -y
