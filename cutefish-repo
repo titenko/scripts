@@ -1,0 +1,4 @@
+#!/bin/bash
+wget -nc http://packages.cutefishos.com/key/cutefishos.gpg.key
+sudo -H gpg -o /etc/apt/trusted.gpg.d/cutefishos.gpg --dearmor cutefishos.gpg.key
+echo "deb [arch=amd64] http://packages.cutefishos.com bullseye main" | sudo tee /etc/apt/sources.list.d/cutefish.list
