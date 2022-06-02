@@ -1,0 +1,3 @@
+#!/bin/bash
+dpkg-deb -x *.deb folder
+dpkg-deb -e *.deb folder/DEBIAN
