@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo "What do you want to create?"
+echo "1. New folder"
+echo "2. New text file"
+echo "3. New Bash script"
+
+read -p "Enter your choice [1, 2, or 3]: " choice
+
+case $choice in
+  1)
+    read -p "Enter folder name: " foldername
+    mkdir "$foldername"
+    echo "New folder '$foldername' created!"
+    ;;
+  2)
+    read -p "Enter file name: " filename
+    touch "$filename".txt
+    echo "New text file '$filename.txt' created!"
+    ;;
+  3)
+    read -p "Enter script name: " scriptname
+    touch "$scriptname".sh
+    echo "#!/bin/bash" > "$scriptname".sh
+    chmod +x "$scriptname".sh
+    echo "New Bash script '$scriptname.sh' created!"
+    ;;
+  *)
+    echo "Invalid choice. Please choose 1, 2, or 3."
+    ;;
+esac
