@@ -1,0 +1,22 @@
+#!/bin/bash
+
+echo "Выберите действие:"
+echo "1. Распковать deb"
+echo "2. Упаковать deb"
+read -p "Введите номер действия: " action
+
+if [ "$action" == "1" ]; then
+  read -p "Введите название deb-пакета: " pname
+  read -p "Введите название папки: " folder_name
+  dpkg-deb -x "${pname}.deb" "${folder_name}"
+  dpkg-deb -e "${pname}.deb" "${folder_name}/DEBIAN"
+  echo "Deb-пакет распакован."
+elif [ "$action" == "2" ]; then
+  read -p "Введите название папки: " folder_name
+  read -p "Введите название deb-пакета: " pname
+  dpkg-deb -b "${folder_name}" "${pname}.deb"
+  echo "Deb-пакет упакован."
+else
+  echo "Некорректный выбор действия."
+fi
+
