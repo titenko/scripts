@@ -4,8 +4,10 @@ echo "What do you want to create?"
 echo "1. New folder"
 echo "2. New text file"
 echo "3. New Bash script"
+echo "4. New Markdown file"
+echo "5. New HTML file"
 
-read -p "Enter your choice [1, 2, or 3]: " choice
+read -p "Enter your choice [1, 2, 3, 4, or 5]: " choice
 
 case $choice in
   1)
@@ -25,7 +27,26 @@ case $choice in
     chmod +x "$scriptname".sh
     echo "New Bash script '$scriptname.sh' created!"
     ;;
-  *)
-    echo "Invalid choice. Please choose 1, 2, or 3."
+  4)
+    read -p "Enter file name: " mdname
+    touch "$mdname".md
+    echo "New Markdown file '$mdname.md' created!"
     ;;
-esac
+  5)
+    read -p "Enter file name: " htmlname
+    touch "$htmlname".html
+    echo "<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+</body>
+</html>" > "$htmlname".html
+    echo "New HTML file '$htmlname.html' created!"
+    ;;
+  *)
+    echo "Invalid choice. Please choose 1, 2, 3, 4, or 5."
+    ;;
+esaс
