@@ -6,8 +6,10 @@ echo "2. New text file"
 echo "3. New Bash script"
 echo "4. New Markdown file"
 echo "5. New HTML file"
+echo "6. New CSS file"
+echo "7. New JS file"
 
-read -p "Enter your choice [1, 2, 3, 4, or 5]: " choice
+read -p "Enter your choice [1, 2, 3, 4, 5, 6 or 7]: " choice
 
 case $choice in
   1)
@@ -17,8 +19,8 @@ case $choice in
     ;;
   2)
     read -p "Enter file name: " filename
-    touch "$filename".txt
-    echo "New text file '$filename.txt' created!"
+    touch "$filename"
+    echo "New text file '$filename' created!"
     ;;
   3)
     read -p "Enter script name: " scriptname
@@ -38,7 +40,7 @@ case $choice in
     echo "<!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+ <title></title>
 </head>
 <body>
 
@@ -46,7 +48,17 @@ case $choice in
 </html>" > "$htmlname".html
     echo "New HTML file '$htmlname.html' created!"
     ;;
-  *)
-    echo "Invalid choice. Please choose 1, 2, 3, 4, or 5."
+  6)
+    read -p "Enter file name: " cssname
+    touch "$cssname".css
+    echo "New CSS file '$cssname.css' created!"
     ;;
-esaс
+  7)
+    read -p "Enter file name: " jsname
+    touch "$jsname".js
+    echo "New JS file '$jsname.js' created!"
+    ;;
+  *)
+    echo "Invalid choice. Please choose 1, 2, 3, 4, 5, 6 or 7."
+    ;;
+esac
