@@ -1,0 +1,61 @@
+#!/bin/bash
+
+function install_jekyll {
+  # Устанавливаем необходимые пакеты и Jekyll
+  sudo apt-get update && sudo apt-get install -y ruby-full build-essential zlib1g-dev && sudo gem install jekyll bundler
+
+  echo "Jekyll успешно установлен"
+}
+
+function new_site {
+  read -p "Введите название сайта: " site_name
+  jekyll new $site_name
+
+  echo "Сайт $site_name успешно создан"
+}
+
+function start_server {
+  cd $(ls -d */) # переходим в каталог созданного сайта
+  bundle install # устанавливаем необходимые зависимости
+  bundle exec jekyll serve
+
+  if [ $? -ne 0 ]; then
+    # Если сервер Jekyll не запущен из-за ошибки, попытаемся исправить ее
+    echo "Ошибка: сервер Jekyll не запущен"
+    echo "Попытка исправить ошибку..."
+
+    # Устанавливаем необходимые зависимости и запускаем снова
+    bundle update
+    bundle exec jekyll serve
+
+    if [ $? -ne 0 ]; then
+      # Если ошибка не исправлена, выводим сообщение об ошибке
+      echo "Ошибка: не удалось исправить ошибку"
+      exit 1
+    fi
+  fi
+
+  echo "Jekyll сервер успешно запущен на http://localhost:4000/"
+}
+
+echo "Выберите действие:"
+echo "1. Установить Jekyll"
+echo "2. Создать новый сайт Jekyll"
+echo "3. Запустить локальный сервер Jekyll"
+read -p "Введите номер действия: " action
+
+case $action in
+  1)
+    install_jekyll
+    ;;
+  2)
+    new_site
+    ;;
+  3)
+    start_server
+    ;;
+  *)
+    echo "Ошибка: Неизвестное действие"
+    exit 1
+    ;;
+esac
