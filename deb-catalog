@@ -1,0 +1,71 @@
+#!/bin/bash
+
+read -p "Enter package name: " package_name
+read -p "Enter package version: " package_version
+read -p "Enter maintainer name: " maintainer_name
+read -p "Enter maintainer email: " maintainer_email
+
+read -p "Enter application name: " application_name
+read -p "Enter application comment: " application_comment
+read -p "Enter application icon path: " application_icon_path
+read -p "Enter application exec command: " application_exec
+
+read -p "Enter package description: " package_description
+read -p "Enter package homepage: " package_homepage
+read -p "Enter package source: " package_source
+
+mkdir -p debian/source
+
+echo "Package: $package_name
+Version: $package_version
+Maintainer: $maintainer_name <$maintainer_email>
+Architecture: all
+Description: $package_description." > debian/changelog
+
+echo "Source: $package_name
+Section: misc
+Priority: optional
+Maintainer: $maintainer_name <$maintainer_email>
+Build-Depends: debhelper (>= 9), dh-python
+Standards-Version: 3.9.8
+Homepage: $package_homepage
+Package: $package_name
+Architecture: all
+Depends: \${misc:Depends}
+Description: $package_description." > debian/control
+
+echo "Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: $package_name
+Upstream-Contact: $maintainer_name <$maintainer_email>
+Source: $package_source
+
+Files: *
+Copyright: Copyright (C) $maintainer_name
+License: GPL-2+
+
+Files: debian/*
+Copyright: Copyright (C) $maintainer_name
+License: GPL-2+" > debian/copyright
+
+echo "#!/usr/bin/make -f
+
+%:
+    dh \$@
+
+override_dh_auto_install:
+    dh_auto_install --destdir=debian/tmp" > debian/rules
+
+chmod +x debian/rules
+
+echo "3.0 (quilt)" > debian/source/format
+
+# Создание файла .desktop и заполнение его данными
+echo "[Desktop Entry]
+Type=Application
+Name=$application_name
+Comment=$application_comment
+Icon=$application_icon_path
+Exec=$application_exec
+Categories=Utility;" > debian/$package_name.desktop
+
+echo "Debian files created successfully."
