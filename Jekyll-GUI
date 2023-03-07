@@ -38,10 +38,30 @@ function start_server {
   echo "Jekyll сервер успешно запущен на http://localhost:4000/"
 }
 
+function new_post {
+  # Запрашиваем название поста
+  read -p "Введите название нового сообщения: " post_title
+
+  # Создаем новый файл поста с заданным именем и текущей датой
+  post_date=$(date +%Y-%m-%d)
+  post_filename="_posts/${post_date}-${post_title// /-}.md"
+
+  # Создаем файл с шаблоном поста
+  echo "---" > $post_filename
+  echo "layout: post" >> $post_filename
+  echo "title: \"$post_title\"" >> $post_filename
+  echo "date: $post_date" >> $post_filename
+  echo "categories: [category]" >> $post_filename
+  echo "---" >> $post_filename
+
+  echo "Новое сообщение \"$post_title\" успешно создано в блоге"
+}
+
 echo "Выберите действие:"
 echo "1. Установить Jekyll"
 echo "2. Создать новый сайт Jekyll"
 echo "3. Запустить локальный сервер Jekyll"
+echo "4. Создать новое сообщение в блоге"
 read -p "Введите номер действия: " action
 
 case $action in
@@ -54,8 +74,5 @@ case $action in
   3)
     start_server
     ;;
-  *)
-    echo "Ошибка: Неизвестное действие"
-    exit 1
-    ;;
-esac
+  4)
+    new
