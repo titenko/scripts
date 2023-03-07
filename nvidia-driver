@@ -1,0 +1,55 @@
+#!/bin/bash
+echo "Выберите систему:"
+echo "1. Debian"
+echo "2. Ubuntu"
+read -p "Введите число (по умолчанию - 2): " CHOICE
+
+if [[ "$CHOICE" == "1" ]]; then
+    DISTRO="debian"
+elif [[ "$CHOICE" == "2" ]] || [[ -z "$CHOICE" ]]; then
+    DISTRO="ubuntu"
+else
+    echo "Неверный выбор. Выбрана Ubuntu."
+    DISTRO="ubuntu"
+fi
+
+VIDEOCARD=$(lspci | grep -E "VGA|3D controller" | grep -i nvidia)
+
+if [[ ! -z "$VIDEOCARD" ]]; then
+    echo "Nvidia видеокарта найдена: $VIDEOCARD"
+
+    wget https://ru.download.nvidia.com/XFree86/Linux-x86_64/$(curl -s https://www.nvidia.com/Download/index.aspx?lang=en-us | grep -oP 'href="/tesla/all/([^/"]+)' | cut -d '"' -f 2) -O nvidia-driver.run
+    chmod +x nvidia-driver.run
+
+    if [[ "$DISTRO" == "debian" ]]; then
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y linux-headers-$(uname -r|sed 's/[^-]*-[^-]*-//') nvidia-driver nvidia-settings nvidia-xconfig
+    elif [[ "$DISTRO" == "ubuntu" ]]; then
+        sudo ./nvidia-driver.run --silent --dkms
+    fi
+
+    if ! nvidia-smi &>/dev/null; then
+        echo "Драйвер не работает. Удаляем установленный драйвер и устанавливаем драйвер для обнаруженной видеокарты."
+        if [[ "$DISTRO" == "debian" ]]; then
+            sudo apt-get purge nvidia*
+        elif [[ "$DISTRO" == "ubuntu" ]]; then
+            sudo ./nvidia-driver.run --uninstall --silent
+        fi
+        rm nvidia-driver.run
+        if [[ "$VIDEOCARD" =~ "GeForce" ]]; then
+            DRIVER_VERSION="470"
+            if [[ "$DISTRO" == "debian" ]]; then
+                sudo apt-get install -y "nvidia-driver=$DRIVER_VERSION" "nvidia-settings=$DRIVER_VERSION" "nvidia-kernel-dkms=$DRIVER_VERSION" "nvidia-detect"
+            elif [[ "$DISTRO" == "ubuntu" ]]; then
+                sudo add-apt-repository -y ppa:graphics-drivers/ppa
+                sudo apt-get update
+                sudo apt-get install -y "nvidia-driver-$DRIVER_VERSION" "nvidia-settings" "nvidia-prime"
+            fi
+        fi
+    else
+        echo "Драйвер успешно установлен."
+    fi
+else
+    echo "Найденные видеокарты Nvidia отсутствуют."
+fi
