@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Функция для сохранения данных в файл
+function save_data() {
+    echo "$POOL,$COIN,$USER" > ~/.xmrig_settings
+    echo "Настройки сохранены в файл ~/.xmrig_settings"
+}
+
+# Функция для удаления сохраненных данных
+function delete_data() {
+    rm -f ~/.xmrig_settings
+    echo "Сохраненные настройки удалены"
+}
+
+# Проверяем, есть ли сохраненные настройки
+if [ -f ~/.xmrig_settings ]; then
+    read -p "Найдены сохраненные настройки. Загрузить их (y/n)? " USE_SAVED_SETTINGS
+    if [[ "$USE_SAVED_SETTINGS" == "y" ]]; then
+        read -r POOL COIN USER < ~/.xmrig_settings
+    else
+        delete_data
+    fi
+fi
+
+# Если сохраненных настроек нет, запрашиваем данные у пользователя
+if [ -z "$POOL" ]; then
+    read -p "Введите адрес пула: " POOL
+fi
+
+if [ -z "$COIN" ]; then
+    read -p "Введите название монеты: " COIN
+fi
+
+if [ -z "$USER" ]; then
+    read -p "Введите адрес кошелька и имя рабочего компьютера: " USER
+fi
+
+# Предлагаем пользователю сохранить или удалить введенные данные
+read -p "Сохранить настройки (y/n)? " SAVE_SETTINGS
+if [[ "$SAVE_SETTINGS" == "y" ]]; then
+    save_data
+else
+    delete_data
+fi
+
+THREADS=$(nproc) # определяем количество ядер процессора
+MEM=$(($(free -g | awk '/^Mem:/{print $2}') / 2)) # определяем количество доступной оперативной памяти
+CONFIG="config.json" # путь до конфигурационного файла xmrig
+
+# Проверяем, установлен ли xmrig
+if ! command -v xmrig &> /dev/null; then
+    read -p "xmrig не установлен. Установить его (y/n)? " INSTALL_XMRIG
+    if [[ "$INSTALL_XMRIG" == "y" ]]; then
+        # Устанавливаем xmrig
+        echo "Установка xmrig..."
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/xmrig/xmrig/releases/latest | grep tag_name | cut -d '"' -f 4)
+        wget https://github.com/xmrig/xmrig/releases/download/$LATEST_VERSION/xmrig-$LATEST_VERSION-linux-x64.tar.gz
+        tar -xf xmrig-$LATEST_VERSION-linux-x64.tar.gz
+        rm xmrig-$LATEST_VERSION-linux-x64.tar.gz
+        mv xmrig-$LATEST_VERSION/xmrig .
+        rm -rf xmrig-$LATEST_VERSION
+    fi
+fi        
+        
+# Проверяем версию xmrig
+CURRENT_VERSION=$(xmrig --version | awk '{print $2}')
+LATEST_VERSION=$(curl -s https://api.github.com/repos/xmrig/xmrig/releases/latest | grep tag_name | cut -d '"' -f 4)
+
+if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+    # Скачиваем и устанавливаем новую версию xmrig
+    echo "Установка новой версии xmrig ($LATEST_VERSION)..."
+    wget https://github.com/xmrig/xmrig/releases/download/"$LATEST_VERSION"/xmrig-"$LATEST_VERSION"-linux-x64.tar.gz
+    tar -xf xmrig-"$LATEST_VERSION"-linux-x64.tar.gz
+    rm xmrig-"$LATEST_VERSION"-linux-x64.tar.gz
+    cd xmrig-"$LATEST_VERSION"
+    mv xmrig ../
+    cd ..
+    rm -rf xmrig-"$LATEST_VERSION"
+fi
+
+# обновляем конфигурационный файл xmrig
+sed -i 's/"cpu": [0-9]*/"cpu": '$THREADS'/' $CONFIG # устанавливаем количество потоков равным количеству ядер процессора
+sed -i 's/"rx-boost": [0-9]*/"rx-boost": 1/' $CONFIG # включаем rx-boost, чтобы увеличить производительность
+
+# запускаем xmrig
+xmrig --threads=$THREADS --max-cpu-usage=100 --cpu-priority=0 --randomx-1gb-pages --randomx-wrmsr=-1 --randomx-no-rdmsr --randomx-cache-qos --randomx-hardware-llc --randomx-no-numa --pools=$POOL --coin=$COIN --user=$USER --max-memory=$MEM
