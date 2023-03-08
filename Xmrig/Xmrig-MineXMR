@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Функция установки зависимостей
+install_dependencies() {
+    sudo apt-get update
+    sudo apt-get -y install build-essential cmake libuv1-dev libssl-dev libhwloc-dev git
+}
+
+# Функция сборки xmrig
+build_xmrig() {
+    cd xmrig || exit 1
+    mkdir -p build && cd build || exit 1
+    cmake ..
+    make -j "$(nproc)"
+    sudo make install
+}
+
+# Функция обновления xmrig
+update_xmrig() {
+    cd xmrig || exit 1
+    git pull
+    mkdir -p build && cd build || exit 1
+    cmake ..
+    make -j "$(nproc)"
+    sudo make install
+}
+
+# Получение текущей и последней версии xmrig
+get_versions() {
+    current_version=$(xmrig --version | awk 'NR==1{print $NF}')
+    latest_version=$(curl -s https://api.github.com/repos/xmrig/xmrig/releases/latest | awk -F '"' '/tag_name/{print $4}')
+}
+
+# Вывод информации о версиях
+print_versions() {
+    echo "Текущая версия xmrig: $current_version"
+    echo "Последняя доступная версия xmrig: $latest_version"
+}
+
+# Меню выбора действия
+print_menu() {
+    echo "Выберите действие:"
+    echo "1. Установка xmrig"
+    echo "2. Обновление xmrig"
+    echo "3. Настройка запуска xmrig"
+}
+
+# Подменю настройки запуска xmrig
+print_submenu() {
+    echo "Выберите вариант настройки:"
+    echo "1. Запуск xmrig с файлом конфигурации"
+    echo "2. Запуск xmrig с заданными настройками"
+}
+
+# Установка зависимостей и сборка xmrig
+install_xmrig() {
+    install_dependencies
+    git clone https://github.com/xmrig/xmrig.git
+    build_xmrig
+}
+
+# Обновление xmrig
+update() {
+    cd xmrig || exit 1
+    git pull
+    update_xmrig
+}
+
+# Настройка запуска xmrig
+configure_xmrig() {
+    print_submenu
+    read sub_choice
+
+    case $sub_choice in
+        1)
+            xmrig --config=config.json
+            ;;
+        2)
+            echo "Введите настройки xmrig в формате: xmrig -o POOL_ADDRESS -u WALLET_ADDRESS -p PASSWORD"
+            read xmrig_settings
+            eval $xmrig_settings
+            ;;
+        *)
+            echo "Неправильный выбор"
+            ;;
+    esac
+}
+
+# Основная логика скрипта
+get_versions
+print_versions
+print_menu
+read choice
+
+case $choice in
+    1)
+        install_xmrig
+        ;;
+    2)
+        update
+        ;;
+    3)
+        configure_xmrig
+        ;;
+    *)
+        echo "Неправильный выбор"
+        ;;
+esac
