@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Определяем количество ядер процессора
+cores=$(nproc)
+
+# Определяем максимально возможное количество потоков
+threads=$((cores * 2))
+
+# Определяем приоритет процессора
+cpu_priority=5
+
+# Определяем максимальное количество потоков
+max_threads_hint=$threads
+
+# Определяем список пулов, на которые будет отправляться вычисленный хешрейт
+pools='[{"url": "pool.minexmr.com:5555", "user": "YOUR_WALLET_ADDRESS", "pass": "x"}]'
+
+# Устанавливаем максимальное значение интенсивности
+intensity=1000
+
+# Определяем количество потоков, используемых для нахождения хеша
+rx_threads=$((cores / 2))
+
+# Определяем размер виртуальной памяти
+vm_size=$(free -m | awk '/Mem:/ {printf "%.0f%%\n", ($2*3/2-$3)/$2*100}')
+
+# Активируем huge pages
+sudo sysctl -w vm.nr_hugepages=$((cores * 3)))
+
+# Создаем config.json файл с заданными параметрами
+jq -n \
+    --argjson threads "$threads" \
+    --argjson cpu_priority "$cpu_priority" \
+    --argjson max_threads_hint "$max_threads_hint" \
+    --argjson pools "$pools" \
+    --argjson intensity "$intensity" \
+    --argjson rx_threads "$rx_threads" \
+    --arg vm_size "$vm_size" \
+    '{ "cpu": { "threads": $threads, "priority": $cpu_priority, "max-threads-hint": $max_threads_hint, "asm": true, "argon2-impl": "x86_64", "rx": [$rx_threads], "rx-boost": 1, "rx-mix-ratio": [15,5], "rx-mix": 3, "rx-sleep": 0, "rx-huge-pages": true, "argon2-chunks": 0 }, "opencl": { "enabled": false }, "cuda": { "enabled": false }, "pools": $pools, "api": { "port": 0, "access-token": null }, "http": { "enabled": false }, "autosave": true, "background": false, "colors": true, "memory": { "swap": { "size": "$vm_size" } } }' > config.json
+
+# Подтверждаем успешное создание config.json
+echo "config.json файл создан успешно!"
