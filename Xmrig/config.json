@@ -1,0 +1,53 @@
+{
+    "autosave": true,
+    "donate-level": 1,
+    "donate-over-proxy": 1,
+    "max-cpu-usage": 100,
+    "pools": [
+        {
+            "algo": "rx/0",
+            "coin": null,
+            "url": "pool.minexmr.com:4444",
+            "user": "YOUR_MONERO_ADDRESS",
+            "pass": "x",
+            "tls": false,
+            "keepalive": true,
+            "nicehash": false,
+            "enabled": true,
+            "tls-fingerprint": null
+        }
+    ],
+    "cpu": {
+        "enabled": true,
+        "huge-pages": true,
+        "hw-aes": null,
+        "priority": null,
+        "memory-pool": true,
+        "yield": true,
+        "max-threads-hint": null,
+        "asm": true,
+        "argon2-impl": null,
+        "rx-impl": null
+    },
+    "opencl": {
+        "enabled": false,
+        "cache": true,
+        "loader": null,
+        "platform": "AMD",
+        "adl": true,
+        "cn/0": true,
+        "cn-lite/0": true,
+        "cn-pico/0": true
+    },
+    "cuda": {
+        "enabled": false,
+        "loader": null,
+        "nvml": true
+    },
+    "log-file": "xmrig.log",
+    "retries": 5,
+    "retry-pause": 5,
+    "syslog": false,
+    "user-agent": null,
+    "watch": true
+}
