@@ -1,0 +1,62 @@
+#!/bin/bash
+
+echo "Welcome to the Xmrig installer!"
+
+# Add a 5-second pause before continuing
+echo "Starting installation or update process in 5 seconds..."
+sleep 5
+
+# Check if script is running with root privileges
+if [ $(id -u) -ne 0 ]; then
+  echo "This script needs to be run with root privileges. Restarting with sudo..."
+  sudo "$0" "$@"
+  exit
+fi
+
+# Add your script code below
+
+# Define the installation directory
+INSTALL_DIR="$HOME/xmrig"
+
+# Check if xmrig is already installed
+if [ -d "$INSTALL_DIR" ]; then
+  # Check for updates
+  echo "Checking for updates to XMRig..."
+  cd "$INSTALL_DIR"
+  CURRENT_VERSION=$(./xmrig --version | awk '{print $3}')
+  LATEST_VERSION=$(curl -s https://api.github.com/repos/xmrig/xmrig/releases/latest | grep tag_name | cut -d '"' -f 4)
+  if [ "$CURRENT_VERSION" == "$LATEST_VERSION" ]; then
+    echo "XMRig is already up to date."
+  else
+    echo "A new version of XMRig is available. Current version: $CURRENT_VERSION, Latest version: $LATEST_VERSION."
+    read -p "Do you want to update XMRig? [y/N]: " -r
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      # Update XMRig
+      echo "Updating XMRig..."
+      git pull
+      cd build
+      make
+      echo "XMRig has been updated to version $LATEST_VERSION."
+    else
+      echo "Skipping XMRig update."
+    fi
+  fi
+else
+  # Clone the XMRig repository
+  echo "Downloading XMRig..."
+  git clone https://github.com/xmrig/xmrig.git "$INSTALL_DIR"
+  cd "$INSTALL_DIR"
+fi
+
+# Build XMRig
+echo "Building XMRig..."
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+
+# Add XMRig to the PATH
+echo "Adding XMRig to the PATH..."
+echo "export PATH=\$PATH:$INSTALL_DIR/build" >> "$HOME/.bashrc"
+
+# Print a message when installation is complete
+echo "XMRig is now installed in $INSTALL_DIR."
