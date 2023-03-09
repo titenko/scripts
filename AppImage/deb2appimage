@@ -1,0 +1,55 @@
+#!/bin/bash
+
+echo "Конвертер DEB в AppImage"
+echo "-------------------------"
+
+# Проверяем наличие утилиты deb2appimage
+if ! which deb2appimage >/dev/null 2>&1; then
+  echo "Утилита deb2appimage не найдена. Устанавливаем ее..."
+  wget -O /tmp/deb2appimage.deb https://github.com/AppImage/pkg2appimage/releases/download/continuous/deb2appimage_2.0.7-2_amd64.deb
+  sudo dpkg -i /tmp/deb2appimage.deb
+  rm /tmp/deb2appimage.deb
+  echo "Утилита deb2appimage успешно установлена."
+else
+  # Проверяем версию утилиты deb2appimage
+  installed_version=$(deb2appimage --version | awk '{print $2}')
+  latest_version=$(wget -q -O - https://api.github.com/repos/AppImage/pkg2appimage/releases/latest | grep tag_name | head -n 1 | cut -d '"' -f 4)
+  if [[ "$installed_version" != "$latest_version" ]]; then
+    echo "Установлена устаревшая версия deb2appimage ($installed_version), обновляем до версии $latest_version..."
+    wget -O /tmp/deb2appimage.deb "https://github.com/AppImage/pkg2appimage/releases/download/$latest_version/deb2appimage_$latest_version_amd64.deb"
+    sudo dpkg -i /tmp/deb2appimage.deb
+    rm /tmp/deb2appimage.deb
+    echo "Утилита deb2appimage успешно обновлена до версии $latest_version."
+  fi
+fi
+
+# Запрашиваем путь к DEB-файлу
+read -p "Введите путь к DEB-файлу: " deb_path
+
+# Проверяем наличие DEB-файла
+if [ ! -f "$deb_path" ]; then
+  echo "DEB-файл не найден: $deb_path"
+  exit 1
+fi
+
+# Запрашиваем название для AppImage-образа
+while true; do
+  read -p "Введите название для AppImage-образа: " appimage_name
+  if [[ ! "$appimage_name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "Название может содержать только буквы, цифры, дефисы и подчеркивания."
+  else
+    break
+  fi
+done
+
+# Выводим информацию о версии deb2appimage
+echo "Используется deb2appimage версии $(deb2appimage --version)"
+
+# Запускаем конвертацию
+echo "Запускаем конвертацию..."
+if deb2appimage "$deb_path" -n "$appimage_name"; then
+  echo "AppImage-образ успешно создан: $appimage_name"
+else
+  echo "Не удалось создать AppImage-образ."
+  exit 1
+fi
