@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Check for required packages and install if necessary
+declare -a packages=("mesa-utils" "cpufrequtils")
+for pkg in "${packages[@]}"; do
+  if ! dpkg -s $pkg >/dev/null 2>&1; then
+    echo "Installing $pkg ..."
+    sudo apt-get install -y $pkg
+  fi
+done
+
+# Check if GPU is compatible with Xmrig
+if ! lspci | grep -qE "VGA|3D controller|Display controller"; then
+  echo "Error: No compatible GPU found"
+  exit 1
+fi
+
+# Check for CPU compatibility with Xmrig
+if ! lscpu | grep -qE "Intel|AMD"; then
+  echo "Error: CPU not compatible with Xmrig"
+  exit 1
+fi
+
+# Check for GPU compatibility with Xmrig
+if ! xmrig --bench 1M | grep -qE "benchmarks completed"; then
+  echo "Error: GPU not compatible with Xmrig"
+  exit 1
+fi
+
+# Configure Xmrig for compatible GPU
+if grep -qE "cuda" /proc/driver/nvidia/version; then
+  sed -i 's/"opencl": true,/"cuda": true,/' ~/xmrig/config.json
+elif grep -qE "amdgpu" /sys/class/drm/card0/device/driver; then
+  sed -i 's/"opencl": true,/"cn/0": true,/' ~/xmrig/config.json
+fi
+
+# Set CPU governor to performance mode
+if grep -q "performance" /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors; then
+  sudo cpufreq-set -r -g performance
+  echo "CPU governor set to performance mode"
+else
+  echo "Error: performance CPU governor not available"
+fi
+
+# Set GPU performance mode
+if [ -x "$(command -v nvidia-smi)" ]; then
+  nvidia-settings -a "[gpu:0]/GPUPowerMizerMode=1"
+  echo "GPU performance mode set"
+elif [ -x "$(command -v rocm-smi)" ]; then
+  rocm-smi --setperflevel 3
+  echo "GPU performance mode set"
+fi
+
+# Restore CPU governor to ondemand mode
+function restore_cpu_governor {
+  if grep -q "ondemand" /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors; then
+    sudo cpufreq-set -r -g ondemand
+    echo "CPU governor set to ondemand mode"
+  else
+    echo "Error: ondemand CPU governor not available"
+  fi
+}
+
+# Start Xmrig
+~/xmrig/xmrig &
+xmrig_pid=$!
+
+# Wait for Xmrig to start and then monitor for exit
+while true; do
+  if pgrep "xmrig" >/dev/null; then
+    sleep 10
+  else
+    restore_cpu_governor
+    kill $xmrig_pid
+    exit
+  fi
+done
