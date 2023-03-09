@@ -1,0 +1,52 @@
+#!/bin/bash
+
+APP_NAME="Code"
+ARCH="x86_64"
+BUILD_DIR="$(pwd)/build"
+
+check_dependencies() {
+    if ! command -v git >/dev/null 2>&1 ||
+        ! command -v mk-build-deps >/dev/null 2>&1 ||
+        ! command -v linuxdeploy >/dev/null 2>&1 ||
+        ! command -v linuxdeploy-plugin-appimage >/dev/null 2>&1 ||
+        ! command -v appimagetool >/dev/null 2>&1
+    then
+        sudo apt-get update
+        sudo apt-get install -y git build-essential debhelper devscripts equivs
+    fi
+}
+
+get_latest_version() {
+    VERSION=$(curl -s "https://api.github.com/repos/elementary/code/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+}
+
+build_appimage() {
+    cd "$BUILD_DIR"
+    git clone https://github.com/elementary/code.git
+    cd code
+    git checkout "tags/${VERSION}"
+    sudo mk-build-deps -i -r -t 'apt-get -y'
+    debuild -us -uc -b
+    wget -O- https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage | sudo bash
+    wget -O- https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage | sudo bash -s -- --appimage-extract
+    PATH=$PATH:/squashfs-root/usr/bin linuxdeploy --appdir AppDir --plugin appimage --output appimage
+    ./appimagetool-x86_64.AppImage --update information "./$APP_NAME-${VERSION}-${ARCH}.AppImage"
+}
+
+notify_user() {
+    if ! pgrep -f "update-manager" >/dev/null 2>&1 &&
+        [ -f "$BUILD_DIR/$APP_NAME-$VERSION-$ARCH.AppImage" ]
+    then
+        notify-send "$APP_NAME Update Available" "A new version of $APP_NAME is available. Click here to update." -i "$BUILD_DIR/$APP_NAME-${VERSION}-${ARCH}.AppImage" -a "$APP_NAME"
+    fi
+}
+
+check_dependencies
+get_latest_version
+
+if [ -f "$BUILD_DIR/$APP_NAME-$VERSION-$ARCH.AppImage" ]; then
+    echo "$APP_NAME is up to date."
+else
+    build_appimage
+    notify_user
+fi
