@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+# Install necessary dependencies
+sudo apt-get update
+sudo apt-get install -y git build-essential cmake libqt5svg5-dev libboost-filesystem-dev libboost-system-dev libboost-program-options-dev libboost-locale-dev liblzma-dev
+
+# Clone the cubic repository
+git clone https://git.launchpad.net/cubic
+
+# Build the application
+cd cubic
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+
+# Create the AppDir
+cd ../..
+mkdir -p cubic.AppDir/usr/bin
+cp build/cubic cubic.AppDir/usr/bin/
+cp cubic.desktop cubic.AppDir/
+cp cubic.svg cubic.AppDir/
+chmod +x cubic.AppDir/AppRun
+
+# Create the AppImage
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+chmod +x appimagetool-x86_64.AppImage
+./appimagetool-x86_64.AppImage cubic.AppDir -n
+
+# Clean up
+rm -rf cubic cubic.AppDir appimagetool-x86_64.AppImage
+
+echo "Cubic AppImage has been successfully created."
