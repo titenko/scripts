@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Проверка, что пользователь запустил скрипт от имени суперпользователя
+if [[ $(id -u) -ne 0 ]]; then
+  echo "Этот скрипт должен быть запущен от имени суперпользователя"
+  exit 1
+fi
+
+# Обновление пакетов
+apt update && apt upgrade -y
+
+# Установка необходимых пакетов
+apt install -y curl wget gnupg
+
+# Добавление репозитория Waydroid
+echo "deb http://repo.waydro.id/debian buster main" > /etc/apt/sources.list.d/waydroid.list
+wget https://repo.waydro.id/waydroid.gpg.key -O- | apt-key add -
+
+# Обновление пакетов после добавления репозитория
+apt update
+
+# Установка Waydroid
+apt install -y waydroid
+
+# Проверка работоспособности Waydroid
+if [[ $(waydroid status | grep "State: running") ]]; then
+  echo "Waydroid успешно установлен и работает."
+else
+  echo "Установка Waydroid не удалась. Проверьте настройки."
+  waydroid log
+  exit 1
+fi
+
+# Настройка Waydroid
+waydroid setup
