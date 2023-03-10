@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Получение имени файла для конвертации
+if [ -z "$1" ]
+then
+    echo "Использование: $0 <имя файла без расширения>"
+    exit 1
+fi
+DEB_FILENAME="$1.deb"
+
+# Путь к директории для сборки
+BUILD_DIR="./build"
+
+# Распаковка deb-пакета
+echo "Распаковка deb-пакета..."
+mkdir -p "$BUILD_DIR/deb"
+dpkg-deb -R "$DEB_FILENAME" "$BUILD_DIR/deb"
+
+# Получение имени приложения и версии
+echo "Получение имени приложения и версии..."
+APP_NAME=$(grep -Po '(?<=^Package: ).*' "$BUILD_DIR/deb/DEBIAN/control")
+APP_VERSION=$(grep -Po '(?<=^Version: ).*' "$BUILD_DIR/deb/DEBIAN/control")
+
+# Создание AppDir
+echo "Создание AppDir..."
+mkdir -p "$BUILD_DIR/$APP_NAME.AppDir"
+cp -r "$BUILD_DIR/deb/"* "$BUILD_DIR/$APP_NAME.AppDir"
+cp "$APP_NAME.desktop" "$BUILD_DIR/$APP_NAME.AppDir"
+ICON=$(find "$BUILD_DIR/deb/usr/share/icons/" -name "*x*.png" -print -quit)
+if [ -n "$ICON" ]; then
+    cp "$ICON" "$BUILD_DIR/$APP_NAME.AppDir/$APP_NAME.png"
+fi
+
+# Получение списка зависимостей
+echo "Получение списка зависимостей..."
+DEPENDENCIES=$(dpkg -I "$DEB_FILENAME" | awk '/Depends:/ {print $2}' | tr ',' '\n' | awk '{ print $1 }' | tr '\n' ' ')
+
+# Установка зависимостей в AppDir
+echo "Установка зависимостей в AppDir..."
+mkdir -p "$BUILD_DIR/dependencies"
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends --download-only $DEPENDENCIES
+for DEPENDENCY in $DEPENDENCIES; do
+    DEB_FILE=$(find /var/cache/apt/archives -name "${DEPENDENCY}*.deb" | head -1)
+    if [ -n "$DEB_FILE" ]; then
+        dpkg-deb -x "$DEB_FILE" "$BUILD_DIR/dependencies"
+    else
+        echo "Не удалось загрузить $DEPENDENCY"
+    fi
+done
+cp -r "$BUILD_DIR/dependencies/"* "$BUILD_DIR/$APP_NAME.AppDir"
+
+# Добавление механизма обновления
+echo "Добавление механизма обновления..."
+wget https://github.com/AppImage/AppImageUpdate/releases/download/continuous/appimageupdater-$(uname -m).AppImage -O "$BUILD_DIR/$APP_NAME.AppDir/appimageupdater"
+chmod a+x "$BUILD_DIR/$APP_NAME.AppDir/appimageupdater"
+wget https://raw.githubusercontent.com/AppImage/AppImageUpdate/master/example/appimageupdater.yml -O "$BUILD_DIR/$APP_NAME.AppDir/appimageupdater.yml"
+
+# Паковка AppImage
+echo "Сборка AppImage..."
+sudo apt-get install -y linuxdeploy linuxdeploy-plugin-appimage
+linuxdeploy --appdir="$BUILD_DIR/$APP_NAME.AppDir" --output appimage
