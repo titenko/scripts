@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Определить используемый DM в системе
+if systemctl status display-manager | grep -q "gdm.service"; then
+  DM="gdm.service"
+elif systemctl status display-manager | grep -q "lightdm.service"; then
+  DM="lightdm.service"
+else
+  echo "Ошибка: не удалось определить используемый DM в системе."
+  exit 1
+fi
+
+# Установить пакет cinnamon-session-wayland
+sudo apt install cinnamon-session-wayland
+
+# Создать файлы cinnamon-wayland.desktop и cinnamon-wayland.desktop в /usr/share/wayland-sessions и /usr/share/xsessions соответственно
+sudo bash -c 'cat << EOF > /usr/share/wayland-sessions/cinnamon-wayland.desktop
+[Desktop Entry]
+Name=Cinnamon (Wayland)
+Comment=This session logs you into Cinnamon with Wayland as the display server.
+Exec=cinnamon-session --session cinnamon-wayland %u
+TryExec=cinnamon-session
+Icon=
+Type=Application
+X-Ubuntu-Gettext-Domain=cinnamon-session-2.0
+EOF'
+
+sudo bash -c 'cat << EOF > /usr/share/xsessions/cinnamon-wayland.desktop
+[Desktop Entry]
+Name=Cinnamon (Wayland)
+Comment=This session logs you into Cinnamon with Wayland as the display server.
+Exec=cinnamon-session --session cinnamon-wayland %u
+TryExec=cinnamon-session
+Icon=
+Type=Application
+X-Ubuntu-Gettext-Domain=cinnamon-session-2.0
+EOF'
+
+# Перезапустить DM-сервис
+sudo systemctl restart $DM
+
+echo "Установка и настройка Wayland-сессии в Cinnamon завершена."
