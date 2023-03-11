@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Add the Anbox repository and install Anbox for Android 7.1.2 and 9.0
+echo "deb https://anbox.scaleway.com/android-7.1.2_r39.1-amd64/ anbox main" | sudo tee /etc/apt/sources.list.d/anbox.list
+wget -O - https://anbox.scaleway.com/android-7.1.2_r39.1-amd64/android-7.1.2_r39.1-amd64.gpg.key | sudo apt-key add -
+echo "deb https://anbox.scaleway.com/android-9.0-amd64/ anbox main" | sudo tee -a /etc/apt/sources.list.d/anbox.list
+wget -O - https://anbox.scaleway.com/android-9.0-amd64/android-9.0-amd64.gpg.key | sudo apt-key add -
+sudo apt update
+sudo apt install anbox-modules-dkms anbox-bridge anbox-tools
+
+# Load kernel modules
+sudo modprobe ashmem_linux
+sudo modprobe binder_linux
+
+# Install Android 7.1.2 and 9.0 images
+sudo apt install anbox-image-7.1.2 anbox-image-9.0
+
+# Set up Anbox
+sudo systemctl enable --now anbox-container-manager.service
+
+# Prompt user to choose the Android version to use or run a specific version
+echo "Which version of Android would you like to use in Anbox? (Enter 'run anbox 7' or 'run anbox 9' to run a specific version)"
+options=("Android 7.1.2" "Android 9.0")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Android 7.1.2")
+            sudo anbox session-manager --snapshot-path=/var/lib/anbox/androids/7.1.2_r39.1/ --no-window --display-width=720 --display-height=1280
+            break
+            ;;
+        "Android 9.0")
+            sudo anbox session-manager --snapshot-path=/var/lib/anbox/androids/9.0/ --no-window --display-width=720 --display-height=1280
+            break
+            ;;
+        "run anbox 7")
+            sudo anbox session-manager --snapshot-path=/var/lib/anbox/androids/7.1.2_r39.1/ --no-window --display-width=720 --display-height=1280
+            break
+            ;;
+        "run anbox 9")
+            sudo anbox session-manager --snapshot-path=/var/lib/anbox/androids/9.0/ --no-window --display-width=720 --display-height=1280
+            break
+            ;;
+        *) echo "Invalid option. Please choose again.";;
+    esac
+done
