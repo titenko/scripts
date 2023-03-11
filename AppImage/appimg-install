@@ -1,0 +1,31 @@
+#!/bin/bash
+
+read -p "Введите ссылку на репозиторий GitHub Pages: " repo_url
+
+function appimg_install {
+  app_file="$1.AppImage"
+  app_url="$repo_url/$app_file"
+  app_dir="/opt/$1"
+  
+  # Скачиваем файл приложения
+  wget "$app_url"
+  
+  # Делаем файл приложения исполняемым
+  chmod +x "$app_file"
+  
+  # Перемещаем файл приложения в директорию /opt
+  sudo mv "$app_file" "$app_dir"
+  
+  # Создаем символическую ссылку на файл приложения
+  sudo ln -s "$app_dir/$app_file" "/usr/local/bin/$1"
+}
+
+function appimg_install_package {
+  appimg_install "$1"
+}
+
+read -p "Введите команду установки приложения (например, appimg install cubic): " command
+
+app_name=$(echo "$command" | cut -d " " -f 3)
+
+appimg_install_package "$app_name"
