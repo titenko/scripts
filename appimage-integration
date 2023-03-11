@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Получить имя файла AppImage и путь к нему
+APPIMAGE="$1"
+APPDIR=$(dirname "$(readlink -f "$APPIMAGE")")
+
+# Скопировать AppImage в /opt
+sudo cp "$APPIMAGE" /opt
+
+# Дать права на запуск
+sudo chmod +x /opt/$(basename "$APPIMAGE")
+
+# Создать .desktop файл для добавления в меню приложений
+DESKTOP_ENTRY="[Desktop Entry]
+Type=Application
+Name=$(basename "$APPIMAGE" .AppImage)
+Exec=/opt/$(basename "$APPIMAGE")
+Icon=$APPDIR/$(basename "$APPIMAGE" .AppImage).png
+Categories=Utility;"
+
+# Создать каталог для .desktop файла и записать его в файл
+sudo mkdir -p /usr/share/applications
+echo "$DESKTOP_ENTRY" | sudo tee /usr/share/applications/$(basename "$APPIMAGE" .AppImage)"$APPIMAGE.desktop" > /dev/null
+
+echo "AppImage был успешно интегрирован в систему!"
