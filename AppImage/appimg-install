@@ -1,23 +1,50 @@
 #!/bin/bash
 
+# Проверяем, запущен ли скрипт с правами суперпользователя
+if [[ $EUID -ne 0 ]]; then
+  echo "Этот скрипт должен быть запущен с правами суперпользователя. Перезапускаем скрипт с правами суперпользователя..."
+  sudo "$0" "$@" # перезапускаем скрипт с правами суперпользователя
+  exit 0
+fi
+
 read -p "Введите ссылку на репозиторий GitHub Pages: " repo_url
 
 function appimg_install {
-  app_file="$1.AppImage"
-  app_url="$repo_url/$app_file"
-  app_dir="/opt/$1"
-  
-  # Скачиваем файл приложения
-  wget "$app_url"
-  
-  # Делаем файл приложения исполняемым
-  chmod +x "$app_file"
-  
-  # Перемещаем файл приложения в директорию /opt
-  sudo mv "$app_file" "$app_dir"
-  
-  # Создаем символическую ссылку на файл приложения
-  sudo ln -s "$app_dir/$app_file" "/usr/local/bin/$1"
+  local app_file="$1.AppImage"
+  local app_url="$repo_url/$app_file"
+  local app_dir="/opt/$1"
+
+  # Скачиваем файл приложения без вывода на экран и с проверкой на успешность
+  if wget -q "$app_url" && [[ -f "$app_file" ]]; then
+    # Делаем файл приложения исполняемым
+    chmod +x "$app_file"
+
+    # Перемещаем файл приложения в директорию /opt, только если директория не существует
+    if [[ ! -d "$app_dir" ]]; then
+      sudo mkdir -p "$app_dir"
+      sudo mv "$app_file" "$app_dir"
+    fi
+
+    # Создаем символическую ссылку на файл приложения в /bin, только если ее еще нет
+    if [[ ! -L "/bin/$1" ]]; then
+      if [[ ! -d "/bin" ]]; then
+        sudo mkdir -p "/bin"
+      fi
+      sudo ln -s "$app_dir/$app_file" "/bin/$1"
+
+      # Создаем файл .desktop в директории /usr/share/applications/
+      sudo tee "/usr/share/applications/$1.desktop" > /dev/null <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=$1
+Comment=$1 - installed via AppImage
+Exec="/bin/$1"
+Icon=$app_dir/icon.png
+Terminal=false
+EOF
+    fi
+  fi
 }
 
 function appimg_install_package {
