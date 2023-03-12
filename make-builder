@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Определение текущей директории
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Установка необходимых инструментов сборки
+sudo apt-get update
+sudo apt-get install -y make cmake
+
+# Установка зависимостей
+if [ -f "dependencies.txt" ]
+then
+    dependencies=$(cat dependencies.txt)
+    if [ ! -z "$dependencies" ]
+    then
+        echo "Установка зависимостей:"
+        sudo apt-get install -y $dependencies
+    fi
+fi
+
+# Сборка проекта
+mkdir -p build && cd build
+if [ -f "../CMakeLists.txt" ]
+then
+    # Определение зависимостей для cmake
+    dependencies=$(grep -E "^find_package\(" ../CMakeLists.txt | sed -E 's/find_package\((.*)\)/\1/' | tr '\n' ' ')
+    cmake .. && make
+    app_name=$(basename $(find . -executable -type f -printf "%f\n" | grep -v CMakeFiles))
+    app_version=$(grep -Po '(?<=set\(VERSION ")[^"]*' ../CMakeLists.txt)
+elif [ -f "../Makefile" ]
+then
+    # Определение зависимостей для make
+    dependencies=$(grep -Po '(?<=DEPENDENCIES = ).*' ../Makefile)
+    make
+    app_name=$(basename $(find . -executable -type f -printf "%f\n"))
+    app_version=$(grep -Po '(?<=VERSION = )[^ ]*' ../Makefile)
+else
+    echo "Не удалось определить систему сборки. Выход."
+    exit 1
+fi
+
+# Определение архитектуры, имени автора и email
+app_arch=$(dpkg-architecture -q DEB_BUILD_ARCH)
+app_author=$(grep -Po '(?<=author = ")[^"]*' ../CMakeLists.txt)
+app_email=$(grep -Po '(?<=email = ")[^"]*' ../CMakeLists.txt)
+
+# Создание каталога debian и необходимых файлов для сборки deb пакета
+cd ..
+mkdir -p debian/DEBIAN
+cat > debian/DEBIAN/control <<EOF
+Package: $app_name
+Version: $app_version
+Architecture: $app_arch
+Maintainer: $app_author <$app_email>
+Depends: $dependencies
+Description: $app_name
+EOF
+mkdir -p debian/usr/bin
+cp build/$app_name debian/usr/bin/
+chmod +x debian/usr/bin/$app_name
+dpkg-deb --build debian
+
+echo "Готово! deb пакет создан в $(pwd)/$app_name.deb"
