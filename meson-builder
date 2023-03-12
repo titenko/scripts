@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Определение текущей директории
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Установка Meson и Ninja
+sudo apt-get update
+sudo apt-get install -y meson ninja-build
+
+# Установка зависимостей
+dependencies=$(meson introspect --uses)
+if [ ! -z "$dependencies" ]
+then
+    echo "Установка зависимостей:"
+    sudo apt-get install -y $dependencies
+fi
+
+# Сборка проекта с помощью Meson и Ninja
+mkdir -p build && meson build && ninja -C build
+
+# Определение имени приложения, его версии и архитектуры
+app_name=$(basename $(find build/ -executable -type f -printf "%f\n"))
+app_version=$(grep -Po '(?<=version = ")[^"]*' meson.build)
+app_arch=$(grep -Po '(?<=architecture = ")[^"]*' meson.build)
+app_author=$(grep -Po '(?<=author = ")[^"]*' meson.build)
+app_email=$(grep -Po '(?<=email = ")[^"]*' meson.build)
+
+# Создание каталога debian и необходимых файлов для сборки deb пакета
+mkdir -p debian/DEBIAN
+cat > debian/DEBIAN/control <<EOF
+Package: $app_name
+Version: $app_version
+Architecture: $app_arch
+Maintainer: $app_author <$app_email>
+Depends: $dependencies
+Description: $app_name
+EOF
+mkdir -p debian/usr/bin
+cp build/$app_name debian/usr/bin/
+chmod +x debian/usr/bin/$app_name
+dpkg-deb --build debian
+
+echo "Готово! deb пакет создан в $(pwd)/$app_name.deb"
