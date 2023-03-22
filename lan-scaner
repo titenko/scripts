@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Определение IP-адреса текущего устройства
+ip_address=$(ip route get 1 | awk '{print $NF;exit}')
+
+# Поиск IP-адресов подключенных устройств
+ip_range=$(ifconfig | grep -oP '(?<=inet\s)\d+\.\d+\.\d+' | head -n 1 | sed 's/\.[0-9]*$/.0\/24/')
+echo "Scanning network: $ip_range"
+
+# Вывод информации об устройствах
+echo "IP Address    Hostname           OS                  Device Type         Username"
+nmap -sP $ip_range | awk -v ip=$ip_address '/^Nmap/{ip=$NF}/Host is up/{if (ip == $NF) {print ip,"(this device)","","",""} else {print ip,"(unknown)","unknown","unknown",""};next}/for/{if (ip == $NF) {print ip,$NF,$NF,$(NF-1),$6} else {print ip,$NF,$NF,$(NF-1),$6}};/$/{getline;getline;if (ip == $NF) {print ip,$NF,$NF,$(NF-1),$6} else {print ip,$NF,$NF,$(NF-1),$6}}' | sed 's/[()]//g'
+
+# Подтверждение выхода из скрипта
+read -p "Press any key to exit..."
+
