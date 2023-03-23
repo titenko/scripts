@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# определение DM
+if [ -n "$(command -v gdm3)" ]; then
+  DM="gdm3"
+elif [ -n "$(command -v lightdm)" ]; then
+  DM="lightdm"
+elif [ -n "$(command -v sddm)" ]; then
+  DM="sddm"
+else
+  echo "Не удалось определить используемый DM"
+  exit 1
+fi
+
+# определение названия сессии
+sessions_dir="/usr/share/xsessions/"
+echo "Доступные сеансы графических оболочек: "
+options=()
+i=0
+ls $sessions_dir | cut -d'.' -f1 | while read session_name; do
+  name=$(grep -i "^Name=" $sessions_dir$session_name.desktop | cut -d'=' -f2)
+  echo "- [$((++i))] $name ($session_name)"
+  options+=($session_name)
+done
+echo
+while true; do
+  read -p "Выберите сеанс для нового пользователя [1-$i]: " selection
+  if [[ "$selection" =~ ^[0-9]+$ ]] && (( $selection >= 1 && $selection <= $i )); then
+    session=${options[$((selection-1))]}
+    break
+  fi
+  echo "Ошибка: введите число от 1 до $i"
+done
+
+# создание нового пользователя
+read -p "Введите имя нового пользователя: " username
+adduser --gecos "" --disabled-password $username
+passwd $username
+
+# назначение прав администратора
+usermod -aG sudo $username
+
+# разрешение автоматического входа
+if [ $DM = "gdm3" ]; then
+  echo -e "[daemon]\nAutomaticLoginEnable=True\nAutomaticLogin=$username\n" > /etc/gdm3/custom.conf
+elif [ $DM = "lightdm" ]; then
+  sed -i "/autologin-user=/d" /etc/lightdm/lightdm.conf
+  echo -e "[SeatDefaults]\nautologin-user=$username\nautologin-user-timeout=0\n" >> /etc/lightdm/lightdm.conf
+elif [ $DM = "sddm" ]; then
+  echo -e "[Autologin]\nUser=$username\nSession=$session\n" > /etc/sddm.conf.d/autologin.conf
+fi
+
+echo "Пользователь $username успешно создан"
