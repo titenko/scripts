@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Files in titenko/scripts repository</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
@@ -24,16 +24,20 @@
           const fileType = item.type;
           // создаем новый элемент списка файлов на странице
           const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.innerText = fileName;
+          li.appendChild(a);
           if (fileType === "dir") {
             li.classList.add("folder");
             const folderIcon = document.createElement("i");
             folderIcon.classList.add("fas", "fa-folder");
-            li.appendChild(folderIcon);
+            li.insertBefore(folderIcon, a);
           } else {
             li.classList.add("file");
             const fileIcon = document.createElement("i");
             fileIcon.classList.add("fas", "fa-file");
-            li.appendChild(fileIcon);
+            li.insertBefore(fileIcon, a);
             const downloadButton = document.createElement("button");
             downloadButton.innerText = "Download";
             downloadButton.addEventListener("click", () => {
@@ -41,10 +45,6 @@
             });
             li.appendChild(downloadButton);
           }
-          const a = document.createElement("a");
-          a.href = fileUrl;
-          a.innerText = fileName;
-          li.appendChild(a);
           fileList.appendChild(li);
         }
       })
