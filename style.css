@@ -10,11 +10,6 @@ body {
   padding: 20px;
 }
 
-h1 {
-  font-size: 36px;
-  margin: 0 0 20px 0;
-}
-
 ul {
   list-style: none;
   margin: 0;
@@ -44,6 +39,10 @@ ul.folder > li > span {
   margin-left: 10px;
 }
 
+ul.folder > li > i.folder-icon {
+  color: #F7D9AA;
+}
+
 a.file {
   display: block;
   padding: 10px;
@@ -53,6 +52,11 @@ a.file {
 
 a.file:hover {
   background-color: #f2f2f2;
+}
+
+a.file > i.file-icon {
+  margin-right: 10px;
+  color: #999;
 }
 
 .flex-column {
