@@ -1,0 +1,56 @@
+/* Стили для списка файлов */
+#fileList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#fileList li {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+#fileList li .file-icon {
+  margin-right: 10px;
+}
+
+#fileList li a {
+  color: #000;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+#fileList li a:hover {
+  text-decoration: underline;
+}
+
+/* Стили для папок */
+#fileList li.folder .file-icon {
+  color: #007bff;
+}
+
+#fileList li.folder a {
+  font-weight: bold;
+}
+
+/* Стили для файлов */
+#fileList li.file .file-icon {
+  color: #6c757d;
+}
+
+/* Стили для кнопки скачивания */
+.download-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  background-color: #0069d9;
+}
