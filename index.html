@@ -4,12 +4,21 @@
   <meta charset="utf-8">
   <title>Files in titenko/scripts repository</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
   <div class="container">
     <h1>Files in titenko/scripts repository</h1>
-    <ul id="folderList"></ul>
-    <ul id="fileList"></ul>
+    <div class="files">
+      <div class="file-header">
+        <div class="file-name">Name</div>
+        <div class="file-size">Size</div>
+        <div class="file-updated">Last Modified</div>
+      </div>
+      <ul class="folderList" id="folderList"></ul>
+      <ul class="fileList" id="fileList"></ul>
+    </div>
   </div>
   <script src="script.js"></script>
   <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
