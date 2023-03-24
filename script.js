@@ -1,43 +1,39 @@
 const apiUrl = "https://api.github.com/repos/titenko/scripts/contents";
 
 const createFileElement = ({name, download_url}) => {
-  const icon = document.createElement("i");
-  icon.classList.add("far", "fa-file");
-  const span = document.createElement("span");
-  span.innerText = name;
   const a = document.createElement("a");
   a.href = download_url;
+  a.innerText = name;
   a.classList.add("file");
-  a.appendChild(icon);
-  a.appendChild(span);
+  const icon = document.createElement("i");
+  icon.classList.add("far", "fa-file");
+  a.insertBefore(icon, a.firstChild);
   return a;
 };
 
 const createFolderElement = (name) => {
-  const icon = document.createElement("i");
-  icon.classList.add("far", "fa-folder");
-  const span = document.createElement("span");
-  span.innerText = name;
   const li = document.createElement("li");
+  li.innerText = name;
   li.classList.add("folder");
-  li.appendChild(icon);
-  li.appendChild(span);
   li.addEventListener("click", async () => {
-    const folderList = li.querySelector("ul");
-    if (!folderList) {
-      const childrenElements = await getFilesAndFolders(`${name}`);
-      folderList = document.createElement("ul");
-      folderList.classList.add("folder");
-      for (const child of childrenElements) {
-        const childLi = document.createElement("li");
-        childLi.appendChild(child);
-        folderList.appendChild(childLi);
-      }
-      li.appendChild(folderList);
-    } else {
+    let folderList = li.querySelector("ul");
+    if (folderList) {
       folderList.remove();
     }
+
+    const childrenElements = await getFilesAndFolders(`${name}`);
+    folderList = document.createElement("ul");
+    folderList.classList.add("folder");
+    for (const child of childrenElements) {
+      const childLi = document.createElement("li");
+      childLi.appendChild(child);
+      folderList.appendChild(childLi);
+    }
+    li.appendChild(folderList);
   });
+  const icon = document.createElement("i");
+  icon.classList.add("far", "fa-folder");
+  li.insertBefore(icon, li.firstChild);
   return li;
 };
 
