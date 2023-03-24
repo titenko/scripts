@@ -1,11 +1,18 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
 .container {
   max-width: 800px;
   margin: 0 auto;
+  padding: 20px;
 }
 
 h1 {
-  font-size: 1.5rem;
-  margin: 1rem 0;
+  font-size: 36px;
+  margin: 0 0 20px 0;
 }
 
 ul {
@@ -14,39 +21,36 @@ ul {
   padding: 0;
 }
 
-li {
-  padding: 0.5rem;
-  border-radius: 5px;
+ul.folder {
+  padding-left: 20px;
 }
 
-.folder > li {
-  background-color: #f1f1f1;
-  margin-bottom: 0.25rem;
+ul.folder > li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
 }
 
-.folder > li:last-child {
-  margin-bottom: 0;
+ul.folder > li:hover {
+  background-color: #f2f2f2;
 }
 
-.folder > li:hover {
-  background-color: #e1e1e1;
+ul.folder > li > i {
+  margin-right: 10px;
 }
 
-.file > a {
-  color: #0066cc;
-  text-decoration: none;
+ul.folder > li > span {
+  margin-left: 10px;
+}
+
+a.file {
   display: block;
-  padding: 0.5rem;
-  border-radius: 5px;
+  padding: 10px;
+  color: #333;
+  text-decoration: none;
 }
 
-.file > a:hover {
-  background-color: #f1f1f1;
-}
-
-.file > a::before {
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  content: "\f15b";
-  margin-right: 0.5rem;
+a.file:hover {
+  background-color: #f2f2f2;
 }
