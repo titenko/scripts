@@ -14,6 +14,12 @@ fetch(apiUrl)
       const a = document.createElement("a");
       a.href = fileUrl;
       a.innerText = fileName;
+      // добавляем класс для папок и файлов
+      if (fileType === "dir") {
+        li.classList.add("folder");
+      } else {
+        li.classList.add("file");
+      }
       // добавляем обработчик событий для загрузки файла
       a.addEventListener("click", e => {
         e.preventDefault(); // отменяем стандартное поведение ссылки
