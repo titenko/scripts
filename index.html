@@ -1,12 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>GitHub Repository Viewer</title>
-  </head>
-  <body>
-    <h1>Содержимое репозитория titenko/scripts:</h1>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Files in titenko/scripts repository</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Files in titenko/scripts repository</h1>
     <ul id="fileList"></ul>
-    <script src="script.js"></script>
-  </body>
+  </div>
+  <script>
+    const apiUrl = "https://api.github.com/repos/titenko/scripts/contents";
+
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        // обработка JSON-ответа API GitHub
+        const fileList = document.getElementById("fileList"); // получаем элемент для вывода списка файлов
+        for (const item of data) {
+          const fileName = item.name;
+          const fileUrl = item.download_url;
+          const fileType = item.type;
+          // создаем новый элемент списка файлов на странице
+          const li = document.createElement("li");
+          if (fileType === "dir") {
+            li.classList.add("folder");
+            const folderIcon = document.createElement("i");
+            folderIcon.classList.add("fas", "fa-folder");
+            li.appendChild(folderIcon);
+          } else {
+            li.classList.add("file");
+            const fileIcon = document.createElement("i");
+            fileIcon.classList.add("fas", "fa-file");
+            li.appendChild(fileIcon);
+            const downloadButton = document.createElement("button");
+            downloadButton.innerText = "Download";
+            downloadButton.addEventListener("click", () => {
+              window.location.href = fileUrl;
+            });
+            li.appendChild(downloadButton);
+          }
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.innerText = fileName;
+          li.appendChild(a);
+          fileList.appendChild(li);
+        }
+      })
+      .catch(error => console.error(error));
+  </script>
+  <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+</body>
 </html>
