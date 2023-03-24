@@ -8,6 +8,7 @@
 <body>
   <div class="container">
     <h1>Files in titenko/scripts repository</h1>
+    <ul id="folderList"></ul>
     <ul id="fileList"></ul>
   </div>
   <script>
@@ -17,6 +18,7 @@
       .then(response => response.json())
       .then(data => {
         // обработка JSON-ответа API GitHub
+        const folderList = document.getElementById("folderList"); // получаем элемент для вывода списка папок
         const fileList = document.getElementById("fileList"); // получаем элемент для вывода списка файлов
         for (const item of data) {
           const fileName = item.name;
@@ -33,6 +35,7 @@
             const folderIcon = document.createElement("i");
             folderIcon.classList.add("fas", "fa-folder");
             li.insertBefore(folderIcon, a);
+            folderList.appendChild(li);
           } else {
             li.classList.add("file");
             const fileIcon = document.createElement("i");
@@ -44,8 +47,8 @@
               window.location.href = fileUrl;
             });
             li.appendChild(downloadButton);
+            fileList.appendChild(li);
           }
-          fileList.appendChild(li);
         }
       })
       .catch(error => console.error(error));
