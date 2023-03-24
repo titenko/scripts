@@ -1,56 +1,53 @@
-/* Стили для списка файлов */
-#fileList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-#fileList li {
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+li {
   display: flex;
   align-items: center;
-  margin: 5px 0;
+  margin: 0.5em;
 }
 
-#fileList li .file-icon {
-  margin-right: 10px;
+.folder i {
+  color: #0074d9;
 }
 
-#fileList li a {
-  color: #000;
-  text-decoration: none;
-  font-size: 16px;
+.file i {
+  color: #2ecc40;
 }
 
-#fileList li a:hover {
-  text-decoration: underline;
-}
-
-/* Стили для папок */
-#fileList li.folder .file-icon {
-  color: #007bff;
-}
-
-#fileList li.folder a {
-  font-weight: bold;
-}
-
-/* Стили для файлов */
-#fileList li.file .file-icon {
-  color: #6c757d;
-}
-
-/* Стили для кнопки скачивания */
-.download-btn {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #007bff;
+.file button {
+  margin-left: auto;
+  background-color: #2ecc40;
   color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 18px;
+  border-radius: 4px;
+  padding: 0.5em 1em;
+  font-size: 1em;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.download-btn:hover {
-  background-color: #0069d9;
+.file button:hover {
+  background-color: #218c74;
+}
+
+.folder a {
+  margin-left: 0.5em;
+}
+
+.file a {
+  margin-left: 0.5em;
+  margin-right: auto;
+}
+
+#fileList {
+  margin-top: 2em;
 }
