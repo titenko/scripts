@@ -54,3 +54,8 @@ a.file {
 a.file:hover {
   background-color: #f2f2f2;
 }
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
