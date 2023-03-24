@@ -29,6 +29,8 @@ li {
   cursor: pointer;
   display: flex;
   align-items: center;
+  display: block;
+  margin-bottom: 5px;
 }
 
 li:hover {
