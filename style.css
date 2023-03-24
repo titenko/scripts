@@ -1,53 +1,37 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
 .container {
   max-width: 800px;
   margin: 0 auto;
-  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  margin-top: 0;
 }
 
 ul {
-  padding: 0;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-li {
-  display: flex;
-  align-items: center;
-  margin: 0.5em;
+.folder > li:before {
+  font-family: "Font Awesome 5 Free";
+  content: "\f07b";
+  color: #007bff;
+  margin-right: 5px;
 }
 
-.folder i {
-  color: #0074d9;
+li a {
+  color: #007bff;
+  text-decoration: none;
 }
 
-.file i {
-  color: #2ecc40;
-}
-
-.file button {
-  margin-left: auto;
-  background-color: #2ecc40;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5em 1em;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.file button:hover {
-  background-color: #218c74;
-}
-
-.folder a {
-  margin-left: 0.5em;
-}
-
-.file a {
-  margin-left: 0.5em;
-  margin-right: auto;
-}
-
-#fileList {
-  margin-top: 2em;
+li a:hover {
+  text-decoration: underline;
 }
