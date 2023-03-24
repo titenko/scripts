@@ -12,16 +12,16 @@ const createFolderElement = (name) => {
   li.innerText = name;
   li.classList.add("folder");
   li.addEventListener("click", async () => {
-    const folderList = li.querySelector("ul");
+    let folderList = li.children[0];
     if (!folderList) {
-      const childrenElements = await getFilesAndFolders(`${name}`);
+      const childrenElements = await getFilesAndFolders(name);
       folderList = document.createElement("ul");
       folderList.classList.add("folder");
-      for (const child of childrenElements) {
+      childrenElements.forEach(child => {
         const childLi = document.createElement("li");
         childLi.appendChild(child);
         folderList.appendChild(childLi);
-      }
+      });
       li.appendChild(folderList);
     } else {
       folderList.remove();
@@ -35,15 +35,13 @@ const getFilesAndFolders = async (path) => {
   const data = await response.json();
   const files = [];
   const folders = [];
-  for (const item of data) {
-    const name = item.name;
-    const download_url = item.download_url;
+  data.forEach(item => {
     if (item.type === "file") {
-      files.push(createFileElement({name, download_url}));
+      files.push(createFileElement(item));
     } else if (item.type === "dir") {
-      folders.push(createFolderElement(name));
+      folders.push(createFolderElement(item.name));
     }
-  }
+  });
   return [...folders, ...files];
 };
 
@@ -51,13 +49,13 @@ const main = async () => {
   const folderList = document.getElementById("folderList");
   const fileList = document.getElementById("fileList");
   const elements = await getFilesAndFolders("");
-  for (const element of elements) {
+  elements.forEach(element => {
     if (element.classList.contains("folder")) {
       folderList.appendChild(element);
     } else {
       fileList.appendChild(element);
     }
-  }
+  });
 };
 
 main().catch(error => console.error(error));
