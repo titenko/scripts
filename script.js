@@ -1,27 +1,27 @@
 const apiUrl = "https://api.github.com/repos/titenko/scripts/contents";
 
 const createFileElement = ({name, download_url}) => {
-  const a = document.createElement("a");
-  a.href = download_url;
   const icon = document.createElement("i");
   icon.classList.add("far", "fa-file");
-  a.appendChild(icon);
   const span = document.createElement("span");
   span.innerText = name;
-  a.appendChild(span);
+  const a = document.createElement("a");
+  a.href = download_url;
   a.classList.add("file");
+  a.appendChild(icon);
+  a.appendChild(span);
   return a;
 };
 
 const createFolderElement = (name) => {
-  const li = document.createElement("li");
   const icon = document.createElement("i");
   icon.classList.add("far", "fa-folder");
-  li.appendChild(icon);
   const span = document.createElement("span");
   span.innerText = name;
-  li.appendChild(span);
+  const li = document.createElement("li");
   li.classList.add("folder");
+  li.appendChild(icon);
+  li.appendChild(span);
   li.addEventListener("click", async () => {
     const folderList = li.querySelector("ul");
     if (!folderList) {
@@ -37,7 +37,6 @@ const createFolderElement = (name) => {
     } else {
       folderList.remove();
     }
-    location.reload();
   });
   return li;
 };
