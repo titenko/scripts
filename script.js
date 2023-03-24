@@ -7,17 +7,26 @@ const createFileElement = ({name, download_url}) => {
   return a;
 };
 
-const createFolderElement = (name, childrenElements) => {
-  const ul = document.createElement("ul");
-  ul.classList.add("folder");
+const createFolderElement = (name) => {
   const li = document.createElement("li");
   li.innerText = name;
-  li.appendChild(ul);
-  for (const child of childrenElements) {
-    const childLi = document.createElement("li");
-    childLi.appendChild(child);
-    ul.appendChild(childLi);
-  }
+  li.classList.add("folder");
+  li.addEventListener("click", async () => {
+    const folderList = li.querySelector("ul");
+    if (!folderList) {
+      const childrenElements = await getFilesAndFolders(`${name}`);
+      folderList = document.createElement("ul");
+      folderList.classList.add("folder");
+      for (const child of childrenElements) {
+        const childLi = document.createElement("li");
+        childLi.appendChild(child);
+        folderList.appendChild(childLi);
+      }
+      li.appendChild(folderList);
+    } else {
+      folderList.remove();
+    }
+  });
   return li;
 };
 
@@ -32,18 +41,22 @@ const getFilesAndFolders = async (path) => {
     if (item.type === "file") {
       files.push(createFileElement({name, download_url}));
     } else if (item.type === "dir") {
-      const children = await getFilesAndFolders(`${path}/${name}`);
-      folders.push(createFolderElement(name, children));
+      folders.push(createFolderElement(name));
     }
   }
   return [...folders, ...files];
 };
 
 const main = async () => {
+  const folderList = document.getElementById("folderList");
   const fileList = document.getElementById("fileList");
   const elements = await getFilesAndFolders("");
   for (const element of elements) {
-    fileList.appendChild(element);
+    if (element.classList.contains("folder")) {
+      folderList.appendChild(element);
+    } else {
+      fileList.appendChild(element);
+    }
   }
 };
 
