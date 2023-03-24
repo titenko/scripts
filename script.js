@@ -2,12 +2,14 @@ const apiUrl = "https://api.github.com/repos/titenko/scripts/contents";
 
 const createFileElement = ({name, download_url}) => {
   const a = document.createElement("a");
+  a.href = download_url;
   const icon = document.createElement("i");
   icon.classList.add("far", "fa-file");
   a.appendChild(icon);
-  a.href = download_url;
+  const span = document.createElement("span");
+  span.innerText = name;
+  a.appendChild(span);
   a.classList.add("file");
-  a.innerText = name;
   return a;
 };
 
@@ -35,6 +37,7 @@ const createFolderElement = (name) => {
     } else {
       folderList.remove();
     }
+    location.reload();
   });
   return li;
 };
