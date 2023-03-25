@@ -1,0 +1,57 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.folder {
+  padding-left: 20px;
+}
+
+ul.folder > li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+ul.folder > li:hover,
+ul.folder > li.active { /* добавлено для активной папки */
+  background-color: #f2f2f2;
+}
+
+ul.folder > li > i {
+  margin-right: 10px;
+}
+
+ul.folder > li > span {
+  margin-left: 10px;
+}
+
+a.file {
+  display: block;
+  padding: 10px;
+  color: #333;
+  text-decoration: none;
+}
+
+a.file:hover {
+  background-color: #f2f2f2;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
