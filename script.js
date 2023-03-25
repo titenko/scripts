@@ -58,6 +58,30 @@ function createRow(icon, name, size, type, link) {
     const linkElement = document.createElement("a"); // Создаем элемент ссылки
     linkElement.href = link; // Устанавливаем атрибут href для ссылки
     linkElement.textContent = name; // Устанавливаем текст ссылки
+    linkElement.download = name; // Устанавливаем имя файла при скачивании
+    linkElement.addEventListener("click", (event) => {
+      event.preventDefault();
+      fetch(link) // Получаем содержимое файла по ссылке
+        .then(response => response.blob()) // Преобразуем его в объект Blob
+        .then(blob => { // Создаем ссылку на Blob-объект
+          const url = URL.createObjectURL(blob);
+          // Создаем элемент ссылки на Blob-объект
+          const downloadLink = document.createElement('a');
+          downloadLink.href = url;
+          downloadLink.download = name;
+          // Добавляем ссылку на Blob-объект в документ
+          document.body.appendChild(downloadLink);
+          // Вызываем клик на ссылку, чтобы начать загрузку файла
+          downloadLink.click();
+          // Удаляем ссылку на Blob-объект из документа
+          downloadLink.remove();
+          // Освобождаем память от ссылки на Blob-объект
+          URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    });
     nameCell.appendChild(linkElement); // Добавляем ссылку в ячейку с названием файла
   } else if (name === "..") {
     backButtonLink.href = "#";
