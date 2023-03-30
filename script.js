@@ -1,183 +1,108 @@
-const BASE_URL = "https://api.github.com/repos/titenko/scripts/contents/";
-const fileTable = document.querySelector("#table");
-const backButtonCell = document.createElement("td");
-const backButtonLink = document.createElement("a");
-backButtonLink.textContent = "Назад";
-backButtonLink.classList.add("back");
-backButtonCell.appendChild(backButtonLink);
-let path = "";
+const apiUrl = "https://api.github.com/repos/titenko/scripts/contents";
+const fileList = document.getElementById("file-list");
 
-function getFileType(fileName) {
-  const fileExtension = fileName.split('.').pop().toLowerCase();
-  switch (fileExtension) {
-    case 'html':
-      return 'HTML';
-    case 'css':
-      return 'CSS';
-    case 'js':
-      return 'JavaScript';
-    case 'json':
-      return 'JSON';
-    case 'xml':
-      return 'XML-документ';
-    case 'md':
-      return 'Markdown-документ';
-    case 'txt':
-      return 'Текстовый документ';
-    case 'sh':
-      return 'Скрипт';    
-    default:
-      return 'Файл';
+async function getFileList(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
   }
 }
 
-function createRow(icon, name, size, type, link) {
-  const row = document.createElement("tr");
+function createBackLink(parentFolderUrl) {
+  const backLink = document.createElement("li");
+  const backLinkIcon = document.createElement("i");
+  const backLinkText = document.createTextNode(" Back");
+  const backLinkAnchor = document.createElement("a");
 
-  const iconCell = document.createElement("td");
-  const iconImage = document.createElement("img");
-  iconImage.src = icon;
-  iconImage.width = 20;
-  iconCell.appendChild(iconImage);
+  backLinkIcon.classList.add("fas", "fa-arrow-circle-left", "mr-2");
+  backLinkAnchor.appendChild(backLinkIcon);
+  backLinkAnchor.appendChild(backLinkText);
+  backLinkAnchor.href = "#";
+  backLinkAnchor.style.textAlign = "left";
+  backLinkAnchor.classList.add("back-link");
 
-  row.appendChild(iconCell);
+  backLink.appendChild(backLinkAnchor);
 
-  const nameCell = document.createElement("td");
-  nameCell.classList.add("name");
-  if (type === "dir" && name !== "..") {
-    const linkElement = document.createElement("a");
-    linkElement.href = "#";
-    linkElement.textContent = name;
-    nameCell.appendChild(linkElement);
-    linkElement.addEventListener("click", (event) => {
-      event.preventDefault();
-      path += `/${name}`;
-      loadPath(path);
+  backLink.addEventListener("click", () => {
+    getFileList(apiUrl).then((data) => {
+      displayFileList(data);
     });
-  } else if (type === "file") {
-    const linkElement = document.createElement("a"); // Создаем элемент ссылки
-    linkElement.href = link; // Устанавливаем атрибут href для ссылки
-    linkElement.textContent = name; // Устанавливаем текст ссылки
-    linkElement.download = name; // Устанавливаем имя файла при скачивании
-    linkElement.addEventListener("click", (event) => {
-      event.preventDefault();
-      fetch(link) // Получаем содержимое файла по ссылке
-        .then(response => response.blob()) // Преобразуем его в объект Blob
-        .then(blob => { // Создаем ссылку на Blob-объект
-          const url = URL.createObjectURL(blob);
-          // Создаем элемент ссылки на Blob-объект
-          const downloadLink = document.createElement('a');
-          downloadLink.href = url;
-          downloadLink.download = name;
-          // Добавляем ссылку на Blob-объект в документ
-          document.body.appendChild(downloadLink);
-          // Вызываем клик на ссылку, чтобы начать загрузку файла
-          downloadLink.click();
-          // Удаляем ссылку на Blob-объект из документа
-          downloadLink.remove();
-          // Освобождаем память от ссылки на Blob-объект
-          URL.revokeObjectURL(url);
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-    });
-    nameCell.appendChild(linkElement); // Добавляем ссылку в ячейку с названием файла
-  } else if (name === "..") {
-    backButtonLink.href = "#";
-    backButtonCell.classList.add("back");
-    backButtonCell.style.textAlign = "left"; // добавляем свойство
-    nameCell.appendChild(backButtonLink);
-    backButtonLink.addEventListener("click", (event) => {
-      event.preventDefault();
-      path = path.slice(0, path.lastIndexOf("/"));
-      loadPath(path);
-    });
-  }
-  row.appendChild(nameCell);
-
-  const typeCell = document.createElement("td");
-  const fileType = getFileType(name);
-  typeCell.textContent = fileType;
-  row.appendChild(typeCell);
-
-  const sizeCell = document.createElement("td");
-  sizeCell.textContent = size ? `${size} B` : "";
-  row.appendChild(sizeCell);
-
-  return row;
-}
-
-function renderFiles(files) {
-  const tbody = table.querySelector('tbody');
-  tbody.innerHTML = "";
-
-  if (!Array.isArray(files)) {
-    return;
-  }
-
-  const rows = [];
-  const folders = [];
-  const other = [];
-
-  files.forEach((file) => {
-    const { name, path, size, type } = file;
-    if (name.startsWith('.')) { // пропустить скрытые файлы
-    return;
-  }
-    const link = `${BASE_URL}${path}`;
-    const icon =
-      type === "dir"
-        ? "https://img.icons8.com/color/48/000000/folder-invoices.png"
-        : "https://img.icons8.com/color/48/000000/file.png";
-    const row = createRow(icon, name, size, type, link);
-
-    if (type === "dir") {
-      folders.push(row);
-    } else {
-      other.push(row);
-    }
   });
 
-  const rowsSorted = [...folders, ...other];
-
-  if (path !== "") {
-    const backRow = createRow(
-      "https://img.icons8.com/color/48/000000/folder-invoices.png",
-      "..",
-      "",
-      "dir",
-      ""
-    );
-    rowsSorted.unshift(backRow);
-  }
-
-   rowsSorted.forEach((row) => {
-    tbody.appendChild(row);
-  });
+  return backLink;
 }
 
-function loadPath(path) {
-  fetch(`${BASE_URL}${path}`)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      renderFiles(data);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
-}
+function createFolderItem(file) {
+  const folderItem = document.createElement("li");
+  const folderLink = document.createElement("a");
+  const folderIcon = document.createElement("i");
+  const folderName = document.createTextNode(" " + file.name);
+  const folderSize = document.createTextNode("");
 
-loadPath(path);
+  folderIcon.classList.add("far", "fa-folder", "mr-2");
+  folderLink.appendChild(folderIcon);
+  folderLink.appendChild(folderName);
+  folderLink.href = file.download_url;
 
-table.addEventListener("click", (event) => {
-  const target = event.target;
-  if (target.tagName === "A" && target.textContent === "Назад") {
+  folderLink.addEventListener("click", (event) => {
     event.preventDefault();
-    path = path.slice(0, path.lastIndexOf("/"));
-    loadPath(path);
+    getFileList(file.url).then((data) => {
+      displayFileList(data);
+    });
+  });
+
+  folderItem.appendChild(folderLink);
+  folderItem.appendChild(folderSize);
+  fileList.appendChild(folderItem);
+}
+
+function createFileItem(file) {
+  const fileItem = document.createElement("li");
+  const fileLink = document.createElement("a");
+  const fileIcon = document.createElement("i");
+  const fileName = document.createTextNode(" " + file.name);
+  const fileSize = document.createTextNode(` ${(file.size / 1024).toFixed(2)} KB`);
+
+  fileIcon.classList.add("far", "fa-file", "mr-2");
+  fileLink.appendChild(fileIcon);
+  fileLink.appendChild(fileName);
+  fileLink.href = file.download_url;
+
+  fileLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    downloadFile(file.download_url);
+  });
+
+  fileItem.appendChild(fileLink);
+  fileItem.appendChild(fileSize);
+  fileList.appendChild(fileItem);
+}
+
+function displayFileList(fileData) {
+  fileList.innerHTML = "";
+
+  const currentFolderUrl = fileData[0].url;
+  const parentFolderUrl = currentFolderUrl.slice(0, currentFolderUrl.lastIndexOf("/"));
+  if (parentFolderUrl !== apiUrl) {
+    fileList.appendChild(createBackLink(parentFolderUrl));
   }
+
+  fileData
+    .filter(file => !file.name.startsWith("."))
+    .sort((a, b) => a.type === b.type ? a.name.localeCompare(b.name) : a.type.localeCompare(b.type))
+    .forEach((file) => {
+      if (file.type === "dir") {
+        createFolderItem(file);
+      } else {
+        createFileItem(file);
+      }
+    });
+}
+
+getFileList(apiUrl).then((data) => {
+  displayFileList(data);
 });
 

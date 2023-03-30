@@ -3,23 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scripts</title>
+    <title>File List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"
+    integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1 class="header">Список файлов</h1>
-    <table id="table">
-      <thead>
-        <tr>
-          <th>Иконка</th>
-          <th>Название</th>
-          <th>Тип</th>
-          <th>Размер</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<header>
+		<div class="icon"><i class="far fa-folder"></i></div>
+		<h1>File Browser</h1>
+	</header>
+
+	<div id="searchInputContainer">
+		<input type="text" id="searchInput" placeholder="Search for a file...">
+		<button id="searchButton"><i class="fas fa-search"></i></button>
+	</div>
+
+<div id="searchResults"></div>
+    <ul id="file-list"></ul>
+    <hr>
+   
+    <script src="search.js"></script>
     <script src="script.js"></script>
+    <script src="download.js"></script>
   </body>
 </html>
 
