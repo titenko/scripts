@@ -1,12 +1,10 @@
-// Функция для установки cookie
 function setCookie(cname, cvalue, exdays) {
   var d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
   var expires = "expires="+ d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-// Функция для получения cookie
 function getCookie(cname) {
   var name = cname + "=";
   var decodedCookie = decodeURIComponent(document.cookie);
@@ -23,28 +21,12 @@ function getCookie(cname) {
   return "";
 }
 
-// Получаем IP-адрес пользователя
-var userIP = '';
-fetch('https://api.ipify.org?format=json')
-  .then(response => response.json())
-  .then(data => {
-    userIP = data.ip;
-    var myIP = userIP; // определяем ваш IP-адрес автоматически
-    if (userIP !== myIP) {
-      // Получаем счетчик посещений из cookie-файла
-      var visitsCount = parseInt(getCookie("visitsCount"));
+var visitsCount = parseInt(getCookie("visitsCount"));
+if (isNaN(visitsCount)) {
+  visitsCount = 0;
+}
 
-      // Если счетчик не был установлен, устанавливаем его в 0
-      if (isNaN(visitsCount)) {
-        visitsCount = 0;
-      }
+visitsCount++;
+setCookie("visitsCount", visitsCount, 365);
 
-      // Увеличиваем счетчик посещений и обновляем cookie-файл
-      visitsCount++;
-      setCookie("visitsCount", visitsCount, 365);
-
-      // Обновляем значение элемента на странице
-      document.getElementById("visits-count").textContent = visitsCount;
-    }
-  });
-
+document.getElementById("visits-count").textContent = visitsCount;
