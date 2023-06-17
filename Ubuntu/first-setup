@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Grant sudo privileges without password prompt
+echo "$(logname) ALL=(ALL:ALL) NOPASSWD: ALL" | sudo EDITOR="tee -a" visudo
+
+# Update package lists
+sudo apt update
+
+# Perform a full system upgrade
+sudo apt full-upgrade -y
+
+# Get Ubuntu version codename
+UBUNTU_VERSION=$(lsb_release -cs)
+
+# Add the PPA for graphics drivers
+sudo add-apt-repository "ppa:graphics-drivers/ppa" -y
+
+# Install the Papirus icon theme
+wget -qO- https://git.io/papirus-icon-theme-install | sh
+
+# Install curl
+sudo apt install curl -y
+
+# Install deb-get
+curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get
+
+# Install git
+sudo apt install git -y
+
+# Download and install Telegram Desktop
+wget -O telegram.tar.xz https://telegram.org/dl/desktop/linux
+sudo tar xvf telegram.tar.xz -C /opt/
+sudo ln -s /opt/Telegram/Telegram /usr/local/bin/telegram-desktop
+
+# Configure WineHQ repository
+sudo dpkg --add-architecture i386
+sudo mkdir -p /etc/apt/keyrings
+sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+echo "deb [signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/ubuntu/ $UBUNTU_VERSION main" | sudo tee /etc/apt/sources.list.d/winehq.list
+
+# Download and execute PortWINE installation script
+wget -O PortProton_1.0 https://github.com/Castro-Fidel/PortWINE/raw/master/portwine_install_script/PortProton_1.0
+chmod +x PortProton_1.0
+./PortProton_1.0
+
+# Install GameHub
+sudo apt install gamehub -y
+
+# Install lgogdownloader and Minigalaxy
+sudo apt install lgogdownloader minigalaxy -y
+
+# Install Lutris
+sudo apt install lutris -y
+
+# Install MangoHud
+sudo apt install mangohud -y
