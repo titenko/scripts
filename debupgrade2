@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Добавляем источники репозиториев
+echo "deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware" | sudo tee /etc/apt/sources.list.d/sid.list
+echo "# deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list.d/sid.list
+echo "deb http://security.debian.org/ sid-security main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list.d/sid.list
+echo "# deb-src http://security.debian.org/ sid-security main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list.d/sid.list
+echo "deb http://deb.debian.org/debian/ sid-updates main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list.d/sid.list
+echo "# deb-src http://deb.debian.org/debian/ sid-updates main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list.d/sid.list
+echo "deb http://www.deb-multimedia.org sid main non-free" | sudo tee /etc/apt/sources.list.d/multimedia.list
+#echo "#deb-src http://www.deb-multimedia.org sid main non-free" | sudo tee -a /etc/apt/sources.list.d/multimedia.list
+
+# Скачиваем и добавляем ключи для источника http://www.deb-multimedia.org
+sudo apt-get install -y --allow-unauthenticated deb-multimedia-keyring
+
+# Обновляем список пакетов
+sudo apt-get update
+
+# Обновляем систему
+sudo apt upgrade --no-remove -y
+sudo apt-get dist-upgrade -y --autoremove --allow-remove-essential

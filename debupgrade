@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Обновление списка пакетов
+sudo apt update
+
+# Обновление установленных пакетов
+sudo apt upgrade -y
+
+# Замена репозиториев на sid
+sudo sed -i 's/bullseye/sid/g' /etc/apt/sources.list
+
+# Добавление репозитория deb-multimedia
+echo "deb http://www.deb-multimedia.org sid main non-free" | sudo tee -a /etc/apt/sources.list
+
+# Добавление источников для проприетарных пакетов и драйверов
+echo "deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+echo "# deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+echo "deb http://security.debian.org/ sid-security main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+echo "# deb-src http://security.debian.org/ sid-security main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+echo "deb http://deb.debian.org/debian/ sid-updates main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+echo "# deb-src http://deb.debian.org/debian/ sid-updates main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list
+
+# Скачивание и добавление ключей для репозитория deb-multimedia
+sudo apt-get update && sudo apt-get install deb-multimedia-keyring
+
+# Блокировка удаления пакетов на время обновления
+sudo apt-mark hold $(dpkg --get-selections | grep -v deinstall$ | awk '{print $1}')
+
+# Обновление списка пакетов
+sudo apt update
+
+# Обновление установленных пакетов без удаления пакетов
+sudo apt upgrade --no-remove -y
+
+# Полное обновление системы без удаления пакетов
+sudo apt full-upgrade --no-remove -y
+
+# Снятие блокировки удаления пакетов после обновления
+sudo apt-mark unhold $(dpkg --get-selections | grep -v deinstall$ | awk '{print $1}')
