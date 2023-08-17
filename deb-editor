@@ -20,6 +20,7 @@ echo "Deb-пакет упакован."
 elif [ "$action" == "3" ]; then
 read -p "Введите название папки с исходным кодом: " src_folder
 cd "$src_folder"
+sudo apt install equivs devscripts --no-install-recommends
 mk-build-deps -i -t "apt-get --yes" -r
 dpkg-buildpackage -b -uc -us
 echo "Deb-пакет собран."
