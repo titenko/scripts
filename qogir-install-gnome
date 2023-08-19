@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Set the URL for the Qogir theme
+QOGIR_URL="https://github.com/vinceliuice/Qogir-theme/archive/refs/heads/master.zip"
+
+# Download the Qogir theme using curl
+curl -L -o qogir.zip $QOGIR_URL
+
+# Unzip the downloaded file
+unzip qogir.zip
+
+# Change to the extracted directory
+cd Qogir-theme-master
+
+# Check if Nautilus is installed
+if command -v nautilus >/dev/null 2>&1; then
+    # Prompt the user to choose whether to install a logo icon on Nautilus
+    read -p "Do you want to install a logo icon on Nautilus? (y/n) " install_icon
+    if [[ $install_icon == "y" ]]; then
+        # Prompt the user to choose which logo icon to install
+        echo "Please choose which logo icon to install:"
+        echo "1. Default (mountain icon)"
+        echo "2. Manjaro"
+        echo "3. Ubuntu"
+        echo "4. Fedora"
+        echo "5. Debian"
+        echo "6. Arch"
+        echo "7. GNOME"
+        echo "8. Budgie"
+        echo "9. Pop!_OS"
+        echo "10. Gentoo"
+        echo "11. Void Linux"
+        echo "12. Zorin OS"
+        echo "13. MX Linux"
+        echo "14. openSUSE"
+        read -p "Enter your choice (1-14): " icon_choice
+
+        # Set the icon parameter based on the user's choice
+        case $icon_choice in
+            1) icon_param="default";;
+            2) icon_param="manjaro";;
+            3) icon_param="ubuntu";;
+            4) icon_param="fedora";;
+            5) icon_param="debian";;
+            6) icon_param="arch";;
+            7) icon_param="gnome";;
+            8) icon_param="budgie";;
+            9) icon_param="popos";;
+            10) icon_param="gentoo";;
+            11) icon_param="void";;
+            12) icon_param="zorin";;
+            13) icon_param="mxlinux";;
+            14) icon_param="opensuse";;
+            *) echo "Invalid choice"; exit;;
+        esac
+    else
+        # Set the icon parameter to default if the user chooses not to install a logo icon on Nautilus
+        icon_param="default"
+    fi
+else
+    # Set the icon parameter to default if Nautilus is not installed
+    icon_param="default"
+fi
+
+# Prompt the user to choose the installation variant
+echo "Please choose the installation variant:"
+echo "1. Install with square window button like Windows 10 (as root)"
+echo "2. Install with rounded window and popup/menu version (as root)"
+echo "3. Install with square window button like Windows 10 (as current user)"
+echo "4. Install with rounded window and popup/menu version (as current user)"
+read -p "Enter your choice (1-4):" choice
+
+# Run the install script with the specified parameters based on the user's choices
+case $choice in
+    1) sudo ./install.sh -d /root -t all -c all --gdm --libadwaita --tweaks square -i $icon_param;;
+    2) sudo ./install.sh -d /root -t all -c all --gdm --libadwaita --tweaks round -i $icon_param;;
+    3) ./install.sh -t all -c all --gdm --libadwaita --tweaks square -i $icon_param;;
+    4) ./install.sh -t all -c all --gdm --libadwaita --tweaks round -i $icon_param;;
+    *) echo "Invalid choice"; exit;;
+esac
+
+# Delete the qogir directory
+cd ..
+rm -rf Qogir-theme-master
