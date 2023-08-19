@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Set the URL for the Qogir theme
+QOGIR_URL="https://github.com/vinceliuice/Qogir-theme/archive/refs/heads/master.zip"
+
+# Download the Qogir theme using curl
+curl -L -o qogir.zip $QOGIR_URL
+
+# Unzip the downloaded file
+unzip qogir.zip
+
+# Change to the extracted directory
+cd Qogir-theme-master
+
+# Prompt the user to choose the installation variant
+echo "Please choose the installation variant:"
+echo "1. Install with square window button like Windows 10 (as root)"
+echo "2. Install with rounded window and popup/menu version (as root)"
+echo "3. Install with square window button like Windows 10 (as current user)"
+echo "4. Install with rounded window and popup/menu version (as current user)"
+read -p "Enter your choice (1-4): " choice
+
+# Run the install script with the specified parameters based on the user's choice
+case $choice in
+    1) sudo ./install.sh -d /root -t all -c all --gdm --libadwaita --tweaks square;;
+    2) sudo ./install.sh -d /root -t all -c all --gdm --libadwaita --tweaks round;;
+    3) ./install.sh -t all -c all --gdm --libadwaita --tweaks square;;
+    4) ./install.sh -t all -c all --gdm --libadwaita --tweaks round;;
+    *) echo "Invalid choice";;
+esac
+
+# Delete the qogir directory
+cd ..
+rm -rf Qogir-theme-master
