@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Функция для распаковки deb-пакета
+unpack_deb() {
+    read -p "Введите название deb-пакета: " pname
+    read -p "Введите название папки: " folder_name
+    dpkg-deb -x "${pname}.deb" "${folder_name}"
+    dpkg-deb -e "${pname}.deb" "${folder_name}/DEBIAN"
+    echo "Deb-пакет распакован."
+}
+
+# Функция для упаковки deb-пакета
+pack_deb() {
+    read -p "Введите название папки: " folder_name
+    read -p "Введите название deb-пакета: " pname
+    dpkg-deb -b "${folder_name}" "${pname}.deb"
+    echo "Deb-пакет упакован."
+}
+
+# Функция для сборки deb-пакета
+build_deb() {
+    # Проверка наличия необходимых компонентов
+    if ! [ -x "$(command -v equivs)" ] || ! [ -x "$(command -v devscripts)" ]; then
+        echo "Необходимые компоненты не установлены. Хотите установить их сейчас? (y/n)"
+        read -p "Введите y или n: " install_choice
+        if [ "$install_choice" == "y" ]; then
+            sudo apt install equivs devscripts --no-install-recommends
+        else
+            echo "Необходимые компоненты не установлены. Операция прервана."
+            return 1
+        fi
+    fi
+
+    # Сборка deb-пакета
+    mk-build-deps -i -t "apt-get --yes" -r
+    dpkg-buildpackage -b -uc -us
+    echo "Deb-пакет собран."
+}
+
+# Основной код скрипта
+echo "Выберите действие:"
+echo "1. Распковать deb"
+echo "2. Упаковать deb"
+echo "3. Собрать deb"
+read -p "Введите номер действия: " action
+
+case $action in
+  1) unpack_deb ;;
+  2) pack_deb ;;
+  3) build_deb ;;
+  *) echo "Некорректный выбор действия." ;;
+esac
