@@ -32,7 +32,7 @@ build_deb() {
     fi
 
     # Build deb package
-    sudo mk-build-deps -i -t "apt-get --yes" -r
+    sudo mk-build-deps -i -r -t "apt-get --no-install-recommends -y"
     dpkg-buildpackage -b -uc -us
     echo "Deb package built."
 }
