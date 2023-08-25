@@ -1,2 +1,5 @@
 #!/bin/bash
 dpkg -l | awk '/^rc/ {print $2}' | xargs sudo dpkg --purge
+
+sudo apt-get install deborphan
+sudo deborphan | xargs sudo apt-get -y remove --purge
