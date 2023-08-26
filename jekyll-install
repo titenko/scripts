@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Update package list and install required packages
+sudo apt-get update
+sudo apt-get install -y ruby-full build-essential zlib1g-dev
+
+# Add Ruby Gems to PATH
+echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
+echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
+echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
+
+# Reload .bashrc to apply changes
+source ~/.bashrc
+
+# Install Jekyll and Bundler
+gem install jekyll bundler
+
+# Display Jekyll and Bundler versions
+jekyll -v
+bundler -v
+
+echo "Jekyll and Bundler are now installed."
