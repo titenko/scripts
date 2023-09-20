@@ -1,4 +1,4 @@
-#uCareSystem
+# uCareSystem
                                                       
 Welcome to all-in-one System Update and maintenance assistant app.                                       
 This simple script will automatically refresh your packagelist, download and install updates (if there are any), remove any old kernels, obsolete packages and configuration files to free up disk space, without any need of user interference              
