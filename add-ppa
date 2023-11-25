@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Check if curl and gpg are installed
+if ! command -v curl &> /dev/null || ! command -v gpg &> /dev/null; then
+    echo "Error: curl and gpg must be installed. Please install them first."
+    exit 1
+fi
+
+# Check if os-release file exists
+if [ ! -e "/etc/os-release" ]; then
+    echo "Error: /etc/os-release not found."
+    exit 1
+fi
+
+# Determine the Debian codename from os-release
+debian_codename=$(grep -oP 'DEBIAN_CODENAME=\K\w+' /etc/os-release 2>/dev/null)
+
+# If Debian codename is found, use it; otherwise, use the logic to fetch from Ubuntu server
+if [ -n "$debian_codename" ]; then
+    ubuntu_codename=$(curl -s http://changelogs.ubuntu.com/meta-release-lts | grep -oP '(?<=^LTS_CODENAME=)\w+')
+else
+    # Determine the Ubuntu codename from os-release
+    ubuntu_codename=$(grep -oP 'UBUNTU_CODENAME=\K\w+' /etc/os-release 2>/dev/null)
+
+    # If Ubuntu codename is not found, use the logic to fetch from Ubuntu server
+    if [ -z "$ubuntu_codename" ]; then
+        ubuntu_codename=$(curl -s http://changelogs.ubuntu.com/meta-release-lts | grep -oP '(?<=^LTS_CODENAME=)\w+')
+    fi
+fi
+
+# If the codename is not found, exit with an error
+if [ -z "$ubuntu_codename" ]; then
+    echo "Error: Unable to determine Ubuntu codename."
+    exit 1
+fi
+
+# Prompt the user to enter the PPA in the format ppa:username/repository
+read -p "Enter the PPA name (in the format ppa:username/repository): " ppa_input
+
+# Validate the entered format
+if [[ ! "$ppa_input" =~ ^ppa:[a-z0-9-]+/[a-z0-9-]+$ ]]; then
+    echo "Error: Invalid PPA format. Example: ppa:username/repository"
+    exit 1
+fi
+
+# Extract username and repository from the input
+username=$(echo "$ppa_input" | cut -d ":" -f2 | cut -d "/" -f1)
+repository=$(echo "$ppa_input" | cut -d ":" -f2 | cut -d "/" -f2)
+
+# PPA URL
+ppa_url="https://api.launchpad.net/devel/~$username/+archive/ubuntu/$repository"
+
+# Get the key from the specified URL
+key_url=$(curl -s "$ppa_url" | grep -oP '(?<=fingerprint": ")[^"]+')
+
+# If the key is not found, exit
+if [ -z "$key_url" ]; then
+    echo "Error: Unable to extract key from the PPA."
+    exit 1
+fi
+
+# Import the key into the system
+gpg --keyserver keyserver.ubuntu.com --recv-keys "$key_url"
+
+# Create the /etc/apt/keyrings/ directory if it doesn't exist
+sudo mkdir -p /etc/apt/keyrings
+
+# Export and save the key to a file
+gpg --export --armor "$key_url" | sudo gpg --dearmor -o "/etc/apt/keyrings/$repository.gpg"
+
+# Create the repository file in the /etc/apt/sources.list.d/ directory
+repo_file="/etc/apt/sources.list.d/$repository.list"
+sudo mkdir -p $(dirname "$repo_file")
+echo "deb [signed-by=/etc/apt/keyrings/$repository.gpg arch=amd64] https://ppa.launchpadcontent.net/$username/$repository/ubuntu $ubuntu_codename main" | sudo tee "$repo_file" > /dev/null
+
+# Update the package list
+sudo apt update
+echo ""
+echo "ppa:$username/$repository $ubuntu_codename added successfully!"
+
