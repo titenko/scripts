@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Ensure that the snap version of Firefox is removed
+sudo apt purge -y firefox
+
+# Determine the Ubuntu codename from the /etc/os-release file
+distro_codename=$(grep UBUNTU_CODENAME /etc/os-release | cut -d'=' -f2)
+
+# Create a preferences file to stop using the snap version of Firefox
+echo 'Package: firefox*
+Pin: release o=Ubuntu*
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/firefox-no-snap
+
+# Block the installation of Firefox through Snap
+echo 'Package: snapd
+Pin: release a=*
+Pin-Priority: -1' | sudo tee /etc/apt/preferences.d/nosnap.pref
+
+# Add the official PPA for Firefox
+sudo add-apt-repository -y ppa:mozillateam/ppa
+
+# Update the package list
+sudo apt-get update
+
+# Install Firefox from the PPA
+sudo apt install -y firefox
+
+# Enable auto-upgrade for Firefox
+echo "Unattended-Upgrade::Allowed-Origins:: \"LP-PPA-mozillateam:${distro_codename}\";" | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox
+
+# Restart the system (optional)
+# sudo reboot
+
+echo "Firefox installation is complete. Please restart your system if necessary."
+
